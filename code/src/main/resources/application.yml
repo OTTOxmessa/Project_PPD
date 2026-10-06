@@ -1,0 +1,36 @@
+spring:
+  application:
+    name: portfolio-system
+  profiles:
+    active: dev
+  jackson:
+    default-property-inclusion: non_null
+  web:
+    error:
+      include-message: always
+      include-binding-errors: always
+      include-stacktrace: never   # ไม่โชว์ stack trace ให้ client เห็น (ความปลอดภัย)
+
+server:
+  port: 8080
+
+springdoc:
+  api-docs:
+    path: /api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+    operations-sorter: method
+    tags-sorter: alpha
+
+logging:
+  pattern:
+    console: "%d{HH:mm:ss} %-5level [%thread] %logger{36} - %msg%n"
+  level:
+    root: INFO
+    "[com.example.portfolio]": DEBUG  # ใส่ [] ครอบคีย์ที่มีจุดเพื่อแก้ Warning
+
+
+jwt:
+  secret: ${JWT_SECRET:CHANGE_THIS_TO_A_LONG_RANDOM_SECRET_AT_LEAST_32_BYTES_FOR_PRODUCTION_USE_ENV_VAR}
+  expiration-ms: 86400000   # 24 ชั่วโมง
+

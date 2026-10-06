@@ -1,0 +1,32 @@
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5432/portfolio_db
+    username: postgres
+    password: root
+    driver-class-name: org.postgresql.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: update       # ช่วงพัฒนาให้ Hibernate สร้าง/อัปเดตตารางจาก entity
+    show-sql: true
+    open-in-view: true       # ระบุชัดเจน (mapper อ่าน lazy relation ตอน render response) และปิด warning ตอน start
+    defer-datasource-initialization: true   # ให้ data.sql รัน "หลัง" Hibernate สร้างตารางเสร็จ
+    properties:
+      hibernate:
+        format_sql: true
+
+  sql:
+    init:
+      mode: always
+      encoding: UTF-8
+      # dev ใช้ Hibernate สร้างตาราง จึงไม่รัน schema.sql (ไฟล์นั้นเก็บไว้ใช้ตอน prod)
+      # "optional:" = ถ้าไม่มีไฟล์นี้ก็ข้ามไปเฉย ๆ ไม่ error
+      schema-locations: optional:classpath:schema-dev-none.sql
+
+# ช่วง dev ให้ scheduler ตรวจ price alert ทุก 30 วินาที (ค่า default ใน production คือ 5 นาที)
+alert:
+  check-interval-ms: 30000
+
+logging:
+  level:
+    "[org.hibernate.SQL]": DEBUG
