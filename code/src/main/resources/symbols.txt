@@ -1,0 +1,145 @@
+# รายชื่อหุ้นอ้างอิงสำหรับช่องค้นหา (Auto-complete)
+# รูปแบบ: SYMBOL|ชื่อบริษัท|ประเภท (AssetType)|ตลาด
+# คั่นด้วย | เพราะชื่อบริษัทหลายตัวมีเครื่องหมายจุลภาค
+# ---------- US Stocks ----------
+AA|Alcoa Corporation|STOCK|US
+AAL|American Airlines Group Inc.|STOCK|US
+AAOI|Applied Optoelectronics, Inc.|STOCK|US
+AAP|Advance Auto Parts, Inc.|STOCK|US
+AAPL|Apple Inc.|STOCK|US
+ABBV|AbbVie Inc.|STOCK|US
+ABNB|Airbnb, Inc.|STOCK|US
+ABT|Abbott Laboratories|STOCK|US
+ACN|Accenture plc|STOCK|US
+ADBE|Adobe Inc.|STOCK|US
+ADI|Analog Devices, Inc.|STOCK|US
+AMAT|Applied Materials, Inc.|STOCK|US
+AMD|Advanced Micro Devices, Inc.|STOCK|US
+AMGN|Amgen Inc.|STOCK|US
+AMZN|Amazon.com, Inc.|STOCK|US
+ANET|Arista Networks, Inc.|STOCK|US
+ARM|Arm Holdings plc|STOCK|US
+ASML|ASML Holding N.V.|STOCK|US
+AVGO|Broadcom Inc.|STOCK|US
+AXP|American Express Company|STOCK|US
+BA|The Boeing Company|STOCK|US
+BABA|Alibaba Group Holding Limited|STOCK|US
+BAC|Bank of America Corporation|STOCK|US
+C|Citigroup Inc.|STOCK|US
+CAT|Caterpillar Inc.|STOCK|US
+COIN|Coinbase Global, Inc.|STOCK|US
+COST|Costco Wholesale Corporation|STOCK|US
+CRM|Salesforce, Inc.|STOCK|US
+CRWD|CrowdStrike Holdings, Inc.|STOCK|US
+CSCO|Cisco Systems, Inc.|STOCK|US
+CVX|Chevron Corporation|STOCK|US
+DDOG|Datadog, Inc.|STOCK|US
+DIS|The Walt Disney Company|STOCK|US
+F|Ford Motor Company|STOCK|US
+GM|General Motors Company|STOCK|US
+GOOG|Alphabet Inc. Class C|STOCK|US
+GOOGL|Alphabet Inc. Class A|STOCK|US
+GS|The Goldman Sachs Group, Inc.|STOCK|US
+HD|The Home Depot, Inc.|STOCK|US
+IBM|International Business Machines Corporation|STOCK|US
+INTC|Intel Corporation|STOCK|US
+INTU|Intuit Inc.|STOCK|US
+IONQ|IonQ, Inc.|STOCK|US
+JNJ|Johnson & Johnson|STOCK|US
+JPM|JPMorgan Chase & Co.|STOCK|US
+KO|The Coca-Cola Company|STOCK|US
+LLY|Eli Lilly and Company|STOCK|US
+LRCX|Lam Research Corporation|STOCK|US
+MA|Mastercard Incorporated|STOCK|US
+MCD|McDonald's Corporation|STOCK|US
+MELI|MercadoLibre, Inc.|STOCK|US
+META|Meta Platforms, Inc.|STOCK|US
+MRK|Merck & Co., Inc.|STOCK|US
+MRVL|Marvell Technology, Inc.|STOCK|US
+MS|Morgan Stanley|STOCK|US
+MSFT|Microsoft Corporation|STOCK|US
+MU|Micron Technology, Inc.|STOCK|US
+NFLX|Netflix, Inc.|STOCK|US
+NKE|NIKE, Inc.|STOCK|US
+NOW|ServiceNow, Inc.|STOCK|US
+NVDA|NVIDIA Corporation|STOCK|US
+NVO|Novo Nordisk A/S|STOCK|US
+ORCL|Oracle Corporation|STOCK|US
+PANW|Palo Alto Networks, Inc.|STOCK|US
+PEP|PepsiCo, Inc.|STOCK|US
+PFE|Pfizer Inc.|STOCK|US
+PG|The Procter & Gamble Company|STOCK|US
+PLTR|Palantir Technologies Inc.|STOCK|US
+PYPL|PayPal Holdings, Inc.|STOCK|US
+QBTS|D-Wave Quantum Inc.|STOCK|US
+QCOM|QUALCOMM Incorporated|STOCK|US
+RGTI|Rigetti Computing, Inc.|STOCK|US
+RIVN|Rivian Automotive, Inc.|STOCK|US
+SBUX|Starbucks Corporation|STOCK|US
+SHOP|Shopify Inc.|STOCK|US
+SMCI|Super Micro Computer, Inc.|STOCK|US
+SNOW|Snowflake Inc.|STOCK|US
+SOFI|SoFi Technologies, Inc.|STOCK|US
+SPOT|Spotify Technology S.A.|STOCK|US
+T|AT&T Inc.|STOCK|US
+TGT|Target Corporation|STOCK|US
+TSLA|Tesla, Inc.|STOCK|US
+TSM|Taiwan Semiconductor Manufacturing Company Limited|STOCK|US
+TXN|Texas Instruments Incorporated|STOCK|US
+UBER|Uber Technologies, Inc.|STOCK|US
+UNH|UnitedHealth Group Incorporated|STOCK|US
+V|Visa Inc.|STOCK|US
+VZ|Verizon Communications Inc.|STOCK|US
+WMT|Walmart Inc.|STOCK|US
+XOM|Exxon Mobil Corporation|STOCK|US
+# ---------- US ETFs ----------
+ARKK|ARK Innovation ETF|ETF|US
+GLD|SPDR Gold Shares|ETF|US
+QQQ|Invesco QQQ Trust|ETF|US
+SCHD|Schwab U.S. Dividend Equity ETF|ETF|US
+SMH|VanEck Semiconductor ETF|ETF|US
+SOXX|iShares Semiconductor ETF|ETF|US
+SPY|SPDR S&P 500 ETF Trust|ETF|US
+TLT|iShares 20+ Year Treasury Bond ETF|ETF|US
+VOO|Vanguard S&P 500 ETF|ETF|US
+VTI|Vanguard Total Stock Market ETF|ETF|US
+# ---------- Thai Stocks (SET) ----------
+ADVANC|Advanced Info Service PCL|STOCK|SET
+AOT|Airports of Thailand PCL|STOCK|SET
+BANPU|Banpu PCL|STOCK|SET
+BBL|Bangkok Bank PCL|STOCK|SET
+BDMS|Bangkok Dusit Medical Services PCL|STOCK|SET
+BEM|Bangkok Expressway and Metro PCL|STOCK|SET
+BH|Bumrungrad Hospital PCL|STOCK|SET
+BTS|BTS Group Holdings PCL|STOCK|SET
+CBG|Carabao Group PCL|STOCK|SET
+CPALL|CP ALL PCL|STOCK|SET
+CPF|Charoen Pokphand Foods PCL|STOCK|SET
+CPN|Central Pattana PCL|STOCK|SET
+CRC|Central Retail Corporation PCL|STOCK|SET
+DELTA|Delta Electronics (Thailand) PCL|STOCK|SET
+EA|Energy Absolute PCL|STOCK|SET
+GPSC|Global Power Synergy PCL|STOCK|SET
+HMPRO|Home Product Center PCL|STOCK|SET
+IVL|Indorama Ventures PCL|STOCK|SET
+KBANK|Kasikornbank PCL|STOCK|SET
+KTB|Krung Thai Bank PCL|STOCK|SET
+KTC|Krungthai Card PCL|STOCK|SET
+LH|Land and Houses PCL|STOCK|SET
+MINT|Minor International PCL|STOCK|SET
+OR|PTT Oil and Retail Business PCL|STOCK|SET
+OSP|Osotspa PCL|STOCK|SET
+PTT|PTT PCL|STOCK|SET
+PTTEP|PTT Exploration and Production PCL|STOCK|SET
+PTTGC|PTT Global Chemical PCL|STOCK|SET
+SCB|SCB X PCL|STOCK|SET
+SCC|The Siam Cement PCL|STOCK|SET
+TISCO|TISCO Financial Group PCL|STOCK|SET
+TOP|Thai Oil PCL|STOCK|SET
+TRUE|True Corporation PCL|STOCK|SET
+TTB|TMBThanachart Bank PCL|STOCK|SET
+TU|Thai Union Group PCL|STOCK|SET
+# ---------- Crypto ----------
+ETH|Ethereum (THB)|CRYPTO|CRYPTO
+SOL|Solana (THB)|CRYPTO|CRYPTO
+XRP|XRP (THB)|CRYPTO|CRYPTO
