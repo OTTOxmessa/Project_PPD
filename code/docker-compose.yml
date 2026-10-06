@@ -1,0 +1,16 @@
+services:
+  postgres-db:
+    image: postgres:15-alpine
+    container_name: portfolio_postgres
+    restart: unless-stopped
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_DB=portfolio_db
+      - POSTGRES_USER=postgres     # สามารถเปลี่ยนได้ แต่ต้องให้ตรงกับ application-dev.yml
+      - POSTGRES_PASSWORD=root # สามารถเปลี่ยนได้ แต่ต้องให้ตรงกับ application-dev.yml
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+volumes:
+  postgres_data:

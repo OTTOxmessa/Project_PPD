@@ -1,0 +1,24 @@
+spring:
+  datasource:
+    url: ${DATABASE_URL}
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
+    driver-class-name: org.postgresql.Driver
+    hikari:
+      maximum-pool-size: 10
+
+  jpa:
+    hibernate:
+      ddl-auto: validate      # production ห้ามให้ Hibernate auto-generate schema เด็ดขาด
+    show-sql: false
+
+  sql:
+    init:
+      mode: always            # รัน schema.sql + data.sql จริงตอน deploy
+
+server:
+  port: ${PORT:8080}
+logging:
+  level:
+    root: WARN
+    "[com.example.portfolio]": INFO
