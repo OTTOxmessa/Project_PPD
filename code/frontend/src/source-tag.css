@@ -1,0 +1,17 @@
+/* ป้ายบอกแหล่งราคา: จำลอง (เหลือง) / Yahoo Finance (เขียว) */
+.source-tag {
+  display: inline-block;
+  margin-left: 0.35rem;
+  padding: 0 0.35rem;
+  border-radius: 4px;
+  font-size: 0.68rem;
+  font-weight: 600;
+  vertical-align: middle;
+  background-color: rgba(245, 184, 61, 0.15);
+  color: #f5b83d;
+}
+
+.source-tag.real {
+  background-color: rgba(34, 197, 94, 0.15);
+  color: #22c55e;
+}
