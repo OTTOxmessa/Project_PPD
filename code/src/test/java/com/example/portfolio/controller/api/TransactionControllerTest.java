@@ -1,0 +1,141 @@
+package com.example.portfolio.controller.api;
+
+import com.example.portfolio.domain.entity.Asset;
+import com.example.portfolio.domain.entity.Transaction;
+import com.example.portfolio.domain.enums.TransactionType;
+import com.example.portfolio.exception.ResourceNotFoundException;
+import com.example.portfolio.service.PortfolioService;
+import com.example.portfolio.service.TransactionService;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.http.MediaType;
+import org.springframework.test.web.servlet.MockMvc;
+
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
+import java.util.List;
+
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.isNull;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
+import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
+// ทดสอบ API บันทึกการซื้อขาย: 201 / 400 / 404 / 409 และการตรวจสิทธิ์เจ้าของพอร์ตก่อนทำรายการ
+@ExtendWith(MockitoExtension.class)
+class TransactionControllerTest {
+
+    private static final String URL = "/api/v1/portfolios/5/transactions";
+
+    @Mock
+    private TransactionService transactionService;
+    @Mock
+    private PortfolioService portfolioService;
+
+    private MockMvc mockMvc;
+
+    @BeforeEach
+    void setUp() {
+        mockMvc = ControllerTestSupport.mockMvcFor(new TransactionController(transactionService, portfolioService));
+        ControllerTestSupport.loginAs(1L);
+    }
+
+    @AfterEach
+    void tearDown() {
+        ControllerTestSupport.logout();
+    }
+
+    private static Transaction saved(TransactionType type) {
+        return Transaction.builder()
+                .id(100L)
+                .asset(Asset.builder().id(10L).symbol("PTT").build())
+                .type(type)
+                .quantity(new BigDecimal("100"))
+                .price(new BigDecimal("35.5"))
+                .executedAt(LocalDateTime.of(2026, 10, 6, 12, 0))
+                .build();
+    }
+
+    @Test
+    @DisplayName("POST BUY ที่ถูกต้อง → 201 และส่งค่าให้ service ครบ")
+    void recordBuy() throws Exception {
+        when(transactionService.record(eq(5L), eq(10L), eq(TransactionType.BUY),
+                eq(new BigDecimal("100")), eq(new BigDecimal("35.5")), isNull()))
+                .thenReturn(saved(TransactionType.BUY));
+
+        mockMvc.perform(post(URL).contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"assetId\":10,\"type\":\"BUY\",\"quantity\":100,\"price\":35.5}"))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.id").value(100))
+                .andExpect(jsonPath("$.symbol").value("PTT"))
+                .andExpect(jsonPath("$.type").value("BUY"));
+
+        verify(portfolioService).getByIdForUser(5L, 1L);
+    }
+
+    @Test
+    @DisplayName("จำนวนเป็น 0 → 400 และไม่บันทึก")
+    void zeroQuantityRejected() throws Exception {
+        mockMvc.perform(post(URL).contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"assetId\":10,\"type\":\"BUY\",\"quantity\":0,\"price\":35.5}"))
+                .andExpect(status().isBadRequest());
+
+        verifyNoInteractions(transactionService);
+    }
+
+    @Test
+    @DisplayName("วันที่ทำรายการเป็นอนาคต → 400")
+    void futureDateRejected() throws Exception {
+        mockMvc.perform(post(URL).contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"assetId\":10,\"type\":\"BUY\",\"quantity\":1,\"price\":1,\"executedAt\":\"2999-01-01\"}"))
+                .andExpect(status().isBadRequest());
+
+        verifyNoInteractions(transactionService);
+    }
+
+    @Test
+    @DisplayName("ขายเกินจำนวนที่ถือ → 409 Conflict")
+    void oversellConflict() throws Exception {
+        when(transactionService.record(anyLong(), anyLong(), any(), any(), any(), any()))
+                .thenThrow(new IllegalStateException("ขายเกินจำนวนที่ถืออยู่ (มี 10)"));
+
+        mockMvc.perform(post(URL).contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"assetId\":10,\"type\":\"SELL\",\"quantity\":50,\"price\":35}"))
+                .andExpect(status().isConflict())
+                .andExpect(jsonPath("$.status").value(409));
+    }
+
+    @Test
+    @DisplayName("พอร์ตไม่ใช่ของผู้ใช้ → 404 และไม่บันทึกรายการ")
+    void foreignPortfolio() throws Exception {
+        when(portfolioService.getByIdForUser(5L, 1L)).thenThrow(new ResourceNotFoundException("Portfolio not found: 5"));
+
+        mockMvc.perform(post(URL).contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"assetId\":10,\"type\":\"BUY\",\"quantity\":1,\"price\":1}"))
+                .andExpect(status().isNotFound());
+
+        verifyNoInteractions(transactionService);
+    }
+
+    @Test
+    @DisplayName("GET รายการธุรกรรมของพอร์ต → 200")
+    void list() throws Exception {
+        when(transactionService.getByPortfolio(5L)).thenReturn(List.of(saved(TransactionType.BUY), saved(TransactionType.SELL)));
+
+        mockMvc.perform(get(URL))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.length()").value(2))
+                .andExpect(jsonPath("$[1].type").value("SELL"));
+    }
+}
