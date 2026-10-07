@@ -1,0 +1,178 @@
+package com.example.portfolio.service.impl;
+
+import com.example.portfolio.domain.entity.AllocationTarget;
+import com.example.portfolio.domain.entity.Asset;
+import com.example.portfolio.domain.entity.Holding;
+import com.example.portfolio.domain.entity.Portfolio;
+import com.example.portfolio.domain.entity.PriceHistory;
+import com.example.portfolio.exception.ResourceNotFoundException;
+import com.example.portfolio.repository.AllocationTargetRepository;
+import com.example.portfolio.repository.AssetRepository;
+import com.example.portfolio.repository.HoldingRepository;
+import com.example.portfolio.repository.PortfolioRepository;
+import com.example.portfolio.repository.PriceHistoryRepository;
+import com.example.portfolio.service.allocation.AllocationComparison;
+import com.example.portfolio.service.allocation.EqualWeightAllocationStrategy;
+import com.example.portfolio.service.allocation.RiskBasedAllocationStrategy;
+import com.example.portfolio.service.allocation.TargetPercentageAllocationStrategy;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+
+import java.math.BigDecimal;
+import java.util.List;
+import java.util.Optional;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
+import static org.mockito.Mockito.when;
+
+// ทดสอบการเทียบสัดส่วนจริงกับเป้าหมาย, การเลือก Strategy จากชื่อ และการตั้งเป้าหมายรายสินทรัพย์
+@ExtendWith(MockitoExtension.class)
+class AllocationServiceImplTest {
+
+    @Mock
+    private HoldingRepository holdingRepository;
+    @Mock
+    private AllocationTargetRepository allocationTargetRepository;
+    @Mock
+    private PriceHistoryRepository priceHistoryRepository;
+    @Mock
+    private PortfolioRepository portfolioRepository;
+    @Mock
+    private AssetRepository assetRepository;
+
+    private AllocationServiceImpl allocationService;
+
+    @BeforeEach
+    void setUp() {
+        allocationService = new AllocationServiceImpl(holdingRepository, allocationTargetRepository,
+                priceHistoryRepository, portfolioRepository, assetRepository,
+                List.of(new TargetPercentageAllocationStrategy(), new EqualWeightAllocationStrategy(),
+                        new RiskBasedAllocationStrategy()));
+    }
+
+    private static Asset asset(long id, String symbol) {
+        return Asset.builder().id(id).symbol(symbol).build();
+    }
+
+    private static Holding holding(Asset asset, String qty) {
+        return Holding.builder().asset(asset).quantity(new BigDecimal(qty)).avgCost(BigDecimal.ZERO).build();
+    }
+
+    private static PriceHistory close(String price) {
+        return PriceHistory.builder().close(new BigDecimal(price)).build();
+    }
+
+    @Test
+    @DisplayName("compare (target): คำนวณ drift = สัดส่วนจริง − เป้าหมาย ต่อสินทรัพย์")
+    void compareComputesDrift() {
+        Asset ptt = asset(1, "PTT");
+        Asset kbank = asset(2, "KBANK");
+        when(holdingRepository.findByPortfolioId(9L)).thenReturn(List.of(holding(ptt, "70"), holding(kbank, "30")));
+        when(priceHistoryRepository.findTopByAssetIdOrderByPriceDateDesc(1L)).thenReturn(Optional.of(close("10")));
+        when(priceHistoryRepository.findTopByAssetIdOrderByPriceDateDesc(2L)).thenReturn(Optional.of(close("10")));
+        when(allocationTargetRepository.findByPortfolioId(9L)).thenReturn(List.of(
+                AllocationTarget.builder().asset(ptt).targetPercent(new BigDecimal("50")).build(),
+                AllocationTarget.builder().asset(kbank).targetPercent(new BigDecimal("50")).build()));
+
+        List<AllocationComparison> result = allocationService.compare(9L, "target");
+
+        AllocationComparison pttRow = result.stream().filter(r -> r.symbol().equals("PTT")).findFirst().orElseThrow();
+        assertThat(pttRow.currentPercent()).isEqualByComparingTo("70");
+        assertThat(pttRow.targetPercent()).isEqualByComparingTo("50");
+        assertThat(pttRow.driftPercent()).isEqualByComparingTo("20");
+        AllocationComparison kbankRow = result.stream().filter(r -> r.symbol().equals("KBANK")).findFirst().orElseThrow();
+        assertThat(kbankRow.driftPercent()).isEqualByComparingTo("-20");
+    }
+
+    @Test
+    @DisplayName("compare (equal): เลือก Strategy จากชื่อ ได้น้ำหนักเท่ากันแม้มูลค่าต่างกัน")
+    void compareSelectsStrategyByName() {
+        Asset ptt = asset(1, "PTT");
+        Asset kbank = asset(2, "KBANK");
+        when(holdingRepository.findByPortfolioId(9L)).thenReturn(List.of(holding(ptt, "70"), holding(kbank, "30")));
+        when(priceHistoryRepository.findTopByAssetIdOrderByPriceDateDesc(1L)).thenReturn(Optional.of(close("10")));
+        when(priceHistoryRepository.findTopByAssetIdOrderByPriceDateDesc(2L)).thenReturn(Optional.of(close("10")));
+        when(allocationTargetRepository.findByPortfolioId(9L)).thenReturn(List.of());
+
+        List<AllocationComparison> result = allocationService.compare(9L, "EQUAL");
+
+        assertThat(result).allSatisfy(r -> assertThat(r.currentPercent()).isEqualByComparingTo("50"));
+    }
+
+    @Test
+    @DisplayName("compare: ชื่อวิธีที่ไม่รู้จัก → IllegalArgumentException (400) ก่อนแตะฐานข้อมูล")
+    void compareUnknownMethod() {
+        assertThatThrownBy(() -> allocationService.compare(9L, "magic"))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("target");
+        verifyNoInteractions(holdingRepository);
+    }
+
+    @Test
+    @DisplayName("compare: สินทรัพย์ที่ไม่ได้ตั้งเป้า → เป้าหมาย 0%")
+    void compareWithoutTarget() {
+        Asset btc = asset(3, "BTC");
+        when(holdingRepository.findByPortfolioId(9L)).thenReturn(List.of(holding(btc, "1")));
+        when(priceHistoryRepository.findTopByAssetIdOrderByPriceDateDesc(3L)).thenReturn(Optional.of(close("2000000")));
+        when(allocationTargetRepository.findByPortfolioId(9L)).thenReturn(List.of());
+
+        List<AllocationComparison> result = allocationService.compare(9L, "target");
+
+        assertThat(result).singleElement().satisfies(r -> {
+            assertThat(r.currentPercent()).isEqualByComparingTo("100");
+            assertThat(r.targetPercent()).isEqualByComparingTo("0");
+        });
+    }
+
+    @Test
+    @DisplayName("upsertTarget: มีเป้าเดิมอยู่แล้ว → แก้ค่าในแถวเดิม")
+    void upsertUpdatesExisting() {
+        AllocationTarget existing = AllocationTarget.builder().id(4L).targetPercent(new BigDecimal("10")).build();
+        when(allocationTargetRepository.findByPortfolioIdAndAssetId(9L, 1L)).thenReturn(Optional.of(existing));
+        when(allocationTargetRepository.save(existing)).thenReturn(existing);
+
+        AllocationTarget result = allocationService.upsertTarget(9L, 1L, new BigDecimal("35"));
+
+        assertThat(result.getId()).isEqualTo(4L);
+        assertThat(result.getTargetPercent()).isEqualByComparingTo("35");
+        verify(portfolioRepository, never()).findById(any());
+    }
+
+    @Test
+    @DisplayName("upsertTarget: ยังไม่มีเป้า → สร้างแถวใหม่ผูกกับพอร์ตและสินทรัพย์")
+    void upsertCreatesNew() {
+        Portfolio portfolio = Portfolio.builder().id(9L).build();
+        Asset ptt = asset(1, "PTT");
+        when(allocationTargetRepository.findByPortfolioIdAndAssetId(9L, 1L)).thenReturn(Optional.empty());
+        when(portfolioRepository.findById(9L)).thenReturn(Optional.of(portfolio));
+        when(assetRepository.findById(1L)).thenReturn(Optional.of(ptt));
+        when(allocationTargetRepository.save(any(AllocationTarget.class))).thenAnswer(inv -> inv.getArgument(0));
+
+        AllocationTarget result = allocationService.upsertTarget(9L, 1L, new BigDecimal("40"));
+
+        assertThat(result.getPortfolio()).isSameAs(portfolio);
+        assertThat(result.getAsset()).isSameAs(ptt);
+        assertThat(result.getTargetPercent()).isEqualByComparingTo("40");
+    }
+
+    @Test
+    @DisplayName("upsertTarget: สินทรัพย์ไม่มีอยู่ → ResourceNotFoundException")
+    void upsertUnknownAsset() {
+        when(allocationTargetRepository.findByPortfolioIdAndAssetId(9L, 99L)).thenReturn(Optional.empty());
+        when(portfolioRepository.findById(9L)).thenReturn(Optional.of(Portfolio.builder().id(9L).build()));
+        when(assetRepository.findById(99L)).thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> allocationService.upsertTarget(9L, 99L, BigDecimal.TEN))
+                .isInstanceOf(ResourceNotFoundException.class);
+        verify(allocationTargetRepository, never()).save(any());
+    }
+}
