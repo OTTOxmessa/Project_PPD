@@ -50,7 +50,7 @@
 | Testing | JUnit 5, Mockito, Spring Boot Test |
 | Market Data | Yahoo Finance (ราคาปิดรายวัน) + ข้อมูลจำลองเป็นทางสำรอง |
 | Version Control | Git + GitHub |
-| Deployment | Docker, [กรอก เช่น Render / Railway] |
+| Deployment | Render + Neon PostgreSQL |
 
 ---
 
