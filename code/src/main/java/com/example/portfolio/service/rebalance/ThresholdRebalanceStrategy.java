@@ -3,7 +3,6 @@ package com.example.portfolio.service.rebalance;
 import com.example.portfolio.domain.enums.RebalanceMethod;
 import com.example.portfolio.domain.entity.AllocationTarget;
 import com.example.portfolio.domain.entity.Holding;
-import com.example.portfolio.domain.enums.TransactionType;
 import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
@@ -61,13 +60,7 @@ public class ThresholdRebalanceStrategy implements RebalanceStrategy {
                 BigDecimal targetValue = totalValue.multiply(targetPercent)
                         .divide(BigDecimal.valueOf(100), 4, RoundingMode.HALF_UP);
                 BigDecimal diffValue = targetValue.subtract(currentValue);
-                BigDecimal diffQuantity = diffValue.divide(price, 6, RoundingMode.HALF_UP).abs();
-
-                TransactionType type = diffValue.compareTo(BigDecimal.ZERO) > 0
-                        ? TransactionType.BUY
-                        : TransactionType.SELL;
-
-                orders.add(new TradeOrder(assetId, h.getAsset().getSymbol(), type, diffQuantity, price));
+                TradeOrder.forValueChange(h.getAsset(), diffValue, price).ifPresent(orders::add);
             }
         }
         return orders;
