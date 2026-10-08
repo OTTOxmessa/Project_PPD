@@ -5,6 +5,8 @@ import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.validation.method.ParameterErrors;
+import org.springframework.validation.method.ParameterValidationResult;
 import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.MissingServletRequestParameterException;
@@ -16,6 +18,7 @@ import org.springframework.web.servlet.resource.NoResourceFoundException;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.stream.Stream;
 
 // แปลง exception ทุกชนิดเป็น ErrorResponse รูปแบบเดียวกัน พร้อม status code ที่ถูกต้อง
 //   400 ข้อมูลไม่ผ่าน validation / รูปแบบผิด   401 login ไม่สำเร็จ   404 ไม่พบข้อมูลหรือ URL
@@ -47,14 +50,25 @@ public class GlobalExceptionHandler {
     }
 
     // constraint บน @PathVariable / @RequestParam ไม่ผ่าน เช่น symbol ยาวเกิน 20 ตัวอักษร
+    // Spring อาจส่ง error ของ @Valid @RequestBody มาทางนี้ด้วย (ParameterErrors) — กรณีนั้นต้องบอกชื่อฟิลด์
+    // เช่น "price: ..." ไม่ใช่ชื่อพารามิเตอร์ของเมธอด "request: ..." ที่ผู้ใช้ไม่รู้ว่าหมายถึงช่องไหน
     @ExceptionHandler(HandlerMethodValidationException.class)
     public ResponseEntity<ErrorResponse> handleParameterValidation(HandlerMethodValidationException ex,
                                                                    HttpServletRequest request) {
         List<String> details = ex.getParameterValidationResults().stream()
-                .flatMap(result -> result.getResolvableErrors().stream()
-                        .map(error -> result.getMethodParameter().getParameterName() + ": " + error.getDefaultMessage()))
+                .flatMap(GlobalExceptionHandler::describe)
                 .toList();
-        return build(HttpStatus.BAD_REQUEST, "พารามิเตอร์ไม่ผ่านการตรวจสอบ", request, details);
+        return build(HttpStatus.BAD_REQUEST, "ข้อมูลที่ส่งมาไม่ผ่านการตรวจสอบ", request, details);
+    }
+
+    private static Stream<String> describe(ParameterValidationResult result) {
+        if (result instanceof ParameterErrors errors) {
+            return errors.getFieldErrors().stream()
+                    .map(fe -> fe.getField() + ": " + fe.getDefaultMessage());
+        }
+        String parameter = result.getMethodParameter().getParameterName();
+        return result.getResolvableErrors().stream()
+                .map(error -> parameter + ": " + error.getDefaultMessage());
     }
 
     // JSON ผิดรูปแบบ หรือค่า enum/ตัวเลขที่อ่านไม่ได้ เช่น "type":"HOLD"
