@@ -2,6 +2,12 @@ import { useCallback, useEffect, useState } from 'react'
 import apiClient from '../../api/client.js'
 import { apiError, formatDateTime, formatNumber } from '../../utils/format.js'
 
+// แสดงจำนวนหน่วยตามความละเอียดจริงจาก backend (สูงสุด 6 ตำแหน่ง) — หุ้นเป็นจำนวนเต็ม คริปโตมีทศนิยม
+// ถ้าปัดเหลือ 4 ตำแหน่ง จำนวน x ราคา จะไม่เท่ากับมูลค่าที่แสดง (เช่น BTC 0.0063 x 5.18 ล้าน ≠ 32,614.62)
+function formatQuantity(value) {
+  return Number(value).toLocaleString('th-TH', { maximumFractionDigits: 6 })
+}
+
 const METHOD_INFO = {
   threshold: 'รีบาลานซ์เฉพาะสินทรัพย์ที่สัดส่วนเบี่ยงจากเป้าหมายเกิน 5%',
   calendar: 'ปรับทุกสินทรัพย์กลับสู่เป้าหมายเต็มจำนวน (ใช้กับการรีบาลานซ์ตามรอบเวลา)',
@@ -96,7 +102,7 @@ function RebalanceTab({ portfolioId }) {
                   <tr key={`${o.assetId}-${o.type}`}>
                     <td><strong>{o.symbol}</strong></td>
                     <td><span className={`badge ${o.type === 'BUY' ? 'badge-green' : 'badge-red'}`}>{o.type}</span></td>
-                    <td className="num">{formatNumber(o.quantity, 4)}</td>
+                    <td className="num">{formatQuantity(o.quantity)}</td>
                     <td className="num">{formatNumber(o.estimatedPrice)}</td>
                     <td className="num">{formatNumber(Number(o.quantity) * Number(o.estimatedPrice))}</td>
                   </tr>
