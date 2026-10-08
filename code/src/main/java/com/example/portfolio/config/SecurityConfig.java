@@ -10,6 +10,8 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
@@ -24,6 +26,16 @@ public class SecurityConfig {
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
+    }
+
+    // ระบบยืนยันตัวตนด้วย JWT ของตัวเอง (AuthService + JwtAuthenticationFilter) ไม่ได้ใช้ระบบ login ของ Spring Security
+    // ประกาศ bean นี้ไว้เพื่อไม่ให้ Spring สร้างผู้ใช้ชั่วคราวพร้อมรหัสผ่านสุ่มให้เอง
+    // (ข้อความ "Using generated security password" ใน log ตอน start)
+    @Bean
+    public UserDetailsService userDetailsService() {
+        return username -> {
+            throw new UsernameNotFoundException("ระบบนี้ยืนยันตัวตนด้วย JWT ผ่าน /api/v1/auth/login");
+        };
     }
 
     @Bean
