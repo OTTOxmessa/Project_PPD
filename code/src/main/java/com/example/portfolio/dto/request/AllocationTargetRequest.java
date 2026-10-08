@@ -7,7 +7,9 @@ import jakarta.validation.constraints.NotNull;
 import java.math.BigDecimal;
 
 public record AllocationTargetRequest(
-        @NotNull Long assetId,
-        @NotNull @DecimalMin("0") @DecimalMax("100") BigDecimal targetPercent
+        @NotNull(message = "กรุณาเลือกสินทรัพย์") Long assetId,
+        @NotNull(message = "กรุณากรอกสัดส่วนเป้าหมาย")
+        @DecimalMin(value = "0", message = "สัดส่วนเป้าหมายต้องไม่ติดลบ")
+        @DecimalMax(value = "100", message = "สัดส่วนเป้าหมายต้องไม่เกิน 100%") BigDecimal targetPercent
 ) {
 }

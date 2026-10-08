@@ -7,8 +7,9 @@ import jakarta.validation.constraints.NotNull;
 import java.math.BigDecimal;
 
 public record PriceAlertRequest(
-        @NotNull Long assetId,
-        @NotNull AlertCondition condition,
-        @NotNull @DecimalMin(value = "0", inclusive = false) BigDecimal targetPrice
+        @NotNull(message = "กรุณาเลือกสินทรัพย์") Long assetId,
+        @NotNull(message = "กรุณาเลือกเงื่อนไขการแจ้งเตือน") AlertCondition condition,
+        @NotNull(message = "กรุณากรอกราคาเป้าหมาย")
+        @DecimalMin(value = "0", inclusive = false, message = "ราคาเป้าหมายต้องมากกว่า 0") BigDecimal targetPrice
 ) {
 }
