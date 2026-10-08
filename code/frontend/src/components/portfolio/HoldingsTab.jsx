@@ -3,6 +3,7 @@ import apiClient from '../../api/client.js'
 import { ensureAsset } from '../../api/assets.js'
 import { apiError, formatDateTime, formatNumber, formatPercent, today } from '../../utils/format.js'
 import SymbolSearch from '../SymbolSearch.jsx'
+import '../../source-tag.css'
 
 const EMPTY_FORM = { type: 'BUY', quantity: '', price: '', executedAt: '' }
 
@@ -157,7 +158,13 @@ function HoldingsTab({ portfolioId, onAssetsChanged }) {
                     const up = Number(h.gain) >= 0
                     return (
                       <tr key={h.assetId}>
-                        <td><strong>{h.symbol}</strong><div className="muted small">{h.name}</div></td>
+                        <td>
+                          <strong>{h.symbol}</strong>
+                          {h.priceSource !== 'YAHOO' && (
+                            <span className="source-tag" title="เชื่อมต่อแหล่งราคาจริงไม่ได้ มูลค่าคำนวณจากราคาจำลอง">จำลอง</span>
+                          )}
+                          <div className="muted small">{h.name}</div>
+                        </td>
                         <td className="num">{formatNumber(h.quantity, 4)}</td>
                         <td className="num">{formatNumber(h.avgCost)}</td>
                         <td className="num">{formatNumber(h.latestPrice)}</td>
