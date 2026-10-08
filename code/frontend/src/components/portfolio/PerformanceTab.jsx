@@ -34,6 +34,12 @@ function PerformanceTab({ portfolioId }) {
     : []
 
   const outperform = report ? Number(report.outperformancePercent) : 0
+  // ปัดเป็นทศนิยม 2 ตำแหน่งก่อนเทียบ เพื่อให้ป้ายตรงกับตัวเลขที่แสดง (เช่น 0.001% แสดงเป็น 0.00% ต้องขึ้นว่าเท่ากับตลาด)
+  const verdict = Math.round(outperform * 100) === 0
+    ? { label: 'เท่ากับตลาด', className: '' }
+    : outperform > 0
+      ? { label: 'ชนะตลาด', className: 'text-green' }
+      : { label: 'แพ้ตลาด', className: 'text-red' }
 
   return (
     <div className="card">
@@ -73,8 +79,8 @@ function PerformanceTab({ portfolioId }) {
               <span className="stat-value">{formatPercent(report.benchmarkReturnPercent)}</span>
             </div>
             <div className="stat">
-              <span className="stat-label">{outperform >= 0 ? 'ชนะตลาด' : 'แพ้ตลาด'}</span>
-              <span className={`stat-value ${outperform >= 0 ? 'text-green' : 'text-red'}`}>
+              <span className="stat-label">{verdict.label}</span>
+              <span className={`stat-value ${verdict.className}`}>
                 {formatPercent(report.outperformancePercent)}
               </span>
             </div>
@@ -94,6 +100,13 @@ function PerformanceTab({ portfolioId }) {
               </Bar>
             </BarChart>
           </ResponsiveContainer>
+
+          {Number(report.benchmarkReturnPercent) === 0 && (
+            <p className="hint">
+              ผลตอบแทนตลาดเป็น 0% อาจเพราะข้อมูลดัชนี {report.benchmarkCode} ในช่วงที่เลือกไม่พอ
+              ผลเปรียบเทียบช่วงนี้จึงยังใช้ตัดสินแพ้-ชนะตลาดไม่ได้
+            </p>
+          )}
 
           {Number(report.portfolioReturnPercent) === 0 && (
             <p className="hint">
