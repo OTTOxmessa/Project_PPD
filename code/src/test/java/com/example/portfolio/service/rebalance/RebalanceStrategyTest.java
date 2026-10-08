@@ -3,6 +3,7 @@ package com.example.portfolio.service.rebalance;
 import com.example.portfolio.domain.entity.AllocationTarget;
 import com.example.portfolio.domain.entity.Asset;
 import com.example.portfolio.domain.entity.Holding;
+import com.example.portfolio.domain.enums.AssetType;
 import com.example.portfolio.domain.enums.TransactionType;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -100,6 +101,43 @@ class RebalanceStrategyTest {
                     Map.of(1L, new BigDecimal("70")));
 
             assertThat(orders).extracting(TradeOrder::symbol).containsExactly("A");
+        }
+    }
+    @Nested
+    @DisplayName("จำนวนหน่วยตามประเภทสินทรัพย์ — หุ้น/ETF ปัดลงเป็นจำนวนเต็ม คริปโตเป็นทศนิยมได้")
+    class WholeUnits {
+        private final Asset stockA = Asset.builder().id(1L).symbol("A").assetType(AssetType.STOCK).build();
+        private final Asset cryptoB = Asset.builder().id(2L).symbol("B").assetType(AssetType.CRYPTO).build();
+
+        private List<Holding> mixedHoldings() {
+            return List.of(
+                    Holding.builder().asset(stockA).quantity(new BigDecimal("10")).avgCost(BigDecimal.ZERO).build(),
+                    Holding.builder().asset(cryptoB).quantity(new BigDecimal("10")).avgCost(BigDecimal.ZERO).build());
+        }
+
+        private List<AllocationTarget> mixedTargets(String a, String b) {
+            return List.of(
+                    AllocationTarget.builder().asset(stockA).targetPercent(new BigDecimal(a)).build(),
+                    AllocationTarget.builder().asset(cryptoB).targetPercent(new BigDecimal(b)).build());
+        }
+
+        @Test
+        @DisplayName("เป้า 50/50 → ขายหุ้น A 2 หุ้น (ปัดลงจาก 2.857143) แต่ซื้อคริปโต B 6.666667 หน่วยได้")
+        void stockRoundedDownCryptoKeepsDecimals() {
+            List<TradeOrder> orders = new ThresholdRebalanceStrategy()
+                    .computeTrades(mixedHoldings(), mixedTargets("50", "50"), PRICES);
+
+            assertThat(orderFor(orders, "A").quantity()).isEqualByComparingTo("2");
+            assertThat(orderFor(orders, "B").quantity()).isEqualByComparingTo("6.666667");
+        }
+
+        @Test
+        @DisplayName("หุ้นที่ต้องปรับไม่ถึง 1 หุ้น (0.285714) → ไม่สร้างคำสั่ง")
+        void lessThanOneShareIsSkipped() {
+            List<TradeOrder> orders = new CalendarRebalanceStrategy()
+                    .computeTrades(mixedHoldings(), mixedTargets("68", "32"), PRICES);
+
+            assertThat(orders).extracting(TradeOrder::symbol).containsExactly("B");
         }
     }
 }
