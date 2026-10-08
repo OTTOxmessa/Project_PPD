@@ -3,6 +3,7 @@ import apiClient from '../../api/client.js'
 import { ensureAsset } from '../../api/assets.js'
 import { apiError, formatDateTime, formatNumber, formatPercent, today } from '../../utils/format.js'
 import SymbolSearch from '../SymbolSearch.jsx'
+import '../../source-tag.css'
 
 const EMPTY_FORM = { type: 'BUY', quantity: '', price: '', executedAt: '' }
 
@@ -43,7 +44,10 @@ function HoldingsTab({ portfolioId, onAssetsChanged }) {
     if (!suggestion.assetId) return // หุ้นใหม่: ให้ผู้ใช้กรอกราคาเอง
     try {
       const res = await apiClient.get(`/assets/${suggestion.assetId}/quote`)
-      if (res.data.price !== null) setForm((f) => ({ ...f, price: String(res.data.price) }))
+      // ใส่ราคาล่าสุดให้เฉพาะตอนช่องราคายังว่าง — ถ้าผู้ใช้พิมพ์ราคาเองก่อนที่ราคาจะโหลดเสร็จ ห้ามเขียนทับ
+      if (res.data.price !== null) {
+        setForm((f) => (f.price === '' ? { ...f, price: String(res.data.price) } : f))
+      }
     } catch {
       // ไม่มีราคา ให้กรอกเอง
     }
@@ -154,7 +158,13 @@ function HoldingsTab({ portfolioId, onAssetsChanged }) {
                     const up = Number(h.gain) >= 0
                     return (
                       <tr key={h.assetId}>
-                        <td><strong>{h.symbol}</strong><div className="muted small">{h.name}</div></td>
+                        <td>
+                          <strong>{h.symbol}</strong>
+                          {h.priceSource !== 'YAHOO' && (
+                            <span className="source-tag" title="เชื่อมต่อแหล่งราคาจริงไม่ได้ มูลค่าคำนวณจากราคาจำลอง">จำลอง</span>
+                          )}
+                          <div className="muted small">{h.name}</div>
+                        </td>
                         <td className="num">{formatNumber(h.quantity, 4)}</td>
                         <td className="num">{formatNumber(h.avgCost)}</td>
                         <td className="num">{formatNumber(h.latestPrice)}</td>
