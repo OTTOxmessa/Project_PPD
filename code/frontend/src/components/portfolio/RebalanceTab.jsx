@@ -57,6 +57,8 @@ function RebalanceTab({ portfolioId }) {
     .reduce((s, o) => s + Number(o.quantity) * Number(o.estimatedPrice), 0)
   const buyValue = orders.filter((o) => o.type === 'BUY')
     .reduce((s, o) => s + Number(o.quantity) * Number(o.estimatedPrice), 0)
+  // ยอดขาย - ยอดซื้อ: บวก = เหลือเงินสด, ลบ = ต้องใช้เงินเพิ่ม (Threshold ปรับเฉพาะบางตัว ยอดจึงไม่เท่ากันเสมอ)
+  const netCash = sellValue - buyValue
 
   return (
     <div>
@@ -110,6 +112,14 @@ function RebalanceTab({ portfolioId }) {
               </tbody>
             </table>
             <p className="muted">ขายรวม {formatNumber(sellValue)} · ซื้อรวม {formatNumber(buyValue)}</p>
+            {Math.abs(netCash) >= 0.01 && (
+              <p className="hint">
+                {netCash > 0
+                  ? `ได้เงินสดเหลือจากการรีบาลานซ์ ${formatNumber(netCash)} บาท`
+                  : `ต้องใช้เงินเพิ่ม ${formatNumber(-netCash)} บาท`}
+                {' '}— ระบบบันทึกเฉพาะรายการซื้อขาย ยังไม่ได้ติดตามยอดเงินสดในพอร์ต
+              </p>
+            )}
             <button className="btn btn-primary" onClick={handleExecute} disabled={executing}>
               {executing ? 'กำลังดำเนินการ...' : 'ยืนยันรีบาลานซ์'}
             </button>
