@@ -109,12 +109,36 @@ class RebalanceServiceImplTest {
     @Test
     @DisplayName("preview: คืนคำสั่งจาก Strategy โดยยังไม่ซื้อขายจริง")
     void previewDoesNotTrade() {
-        when(holdingRepository.findByPortfolioId(5L)).thenReturn(List.of());
+        Portfolio portfolio = portfolioWithHoldings();
+        when(portfolioRepository.findById(5L)).thenReturn(Optional.of(portfolio));
+        when(holdingRepository.findByPortfolioId(5L)).thenReturn(portfolio.getHoldings());
         when(allocationTargetRepository.findByPortfolioId(5L)).thenReturn(List.<AllocationTarget>of());
         when(strategy.computeTrades(any(), any(), anyMap())).thenReturn(List.of(BUY_B));
 
         assertThat(rebalanceService.preview(5L, "threshold")).containsExactly(BUY_B);
         verifyNoInteractions(transactionService);
+        verify(rebalanceLogRepository, never()).save(any());
+    }
+
+    @Test
+    @DisplayName("preview: เป้าหมายรวม 90% → Chain ปฏิเสธตั้งแต่ตอนดูแผน ไม่ต้องรอกดยืนยัน")
+    void previewRejectedWhenTargetsDoNotSumTo100() {
+        stubTradesFor(portfolioWithTargets("60", "30"));
+
+        assertThatThrownBy(() -> rebalanceService.preview(5L, "threshold"))
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessageContaining("90");
+        verifyNoInteractions(transactionService);
+    }
+
+    @Test
+    @DisplayName("preview: พอร์ตไม่มีอยู่ → ResourceNotFoundException")
+    void previewUnknownPortfolio() {
+        when(portfolioRepository.findById(5L)).thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> rebalanceService.preview(5L, "threshold"))
+                .isInstanceOf(ResourceNotFoundException.class);
+        verify(strategy, never()).computeTrades(any(), any(), anyMap());
     }
 
     @Test

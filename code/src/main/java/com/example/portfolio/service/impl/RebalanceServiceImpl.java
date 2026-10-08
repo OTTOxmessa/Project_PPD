@@ -61,22 +61,21 @@ public class RebalanceServiceImpl implements RebalanceService {
         this.validationChain = validationChain;
     }
 
+    // preview ตรวจด้วย Chain เดียวกับ execute — ถ้าพอร์ตยังไม่พร้อม (เช่น เป้ารวมไม่ถึง 100%)
+    // ผู้ใช้จะเห็นเหตุผลตั้งแต่หน้าแผน ไม่ใช่เห็นแผนก่อนแล้วโดนปฏิเสธตอนกดยืนยัน
     @Override
+    @Transactional(readOnly = true)
     public List<TradeOrder> preview(Long portfolioId, String method) {
-        return computeTrades(portfolioId, strategies.get(method));
+        RebalanceStrategy strategy = strategies.get(method);
+        return validatedTrades(findPortfolio(portfolioId), strategy);
     }
 
     @Override
     @Transactional
     public RebalanceLog execute(Long portfolioId, String method) {
         RebalanceStrategy strategy = strategies.get(method);
-        Portfolio portfolio = portfolioRepository.findById(portfolioId)
-                .orElseThrow(() -> new ResourceNotFoundException("Portfolio not found: " + portfolioId));
-
-        List<TradeOrder> trades = computeTrades(portfolioId, strategy);
-
-        // Chain of Responsibility: ต้องมี holding -> ต้องมีเป้าหมาย -> เป้าหมายรวม 100% (ประกอบที่ RebalanceValidationConfig)
-        validationChain.validate(portfolio, trades);
+        Portfolio portfolio = findPortfolio(portfolioId);
+        List<TradeOrder> trades = validatedTrades(portfolio, strategy);
 
         // ขายก่อนซื้อ (SELL ทิศ -1 มาก่อน BUY ทิศ +1) — ได้เงินจากการขายมาใช้ซื้อ เหมือนการรีบาลานซ์จริง
         List<TradeOrder> ordered = trades.stream()
@@ -97,6 +96,18 @@ public class RebalanceServiceImpl implements RebalanceService {
     @Override
     public Page<RebalanceLog> getHistory(Long portfolioId, Pageable pageable) {
         return rebalanceLogRepository.findByPortfolioId(portfolioId, pageable);
+    }
+
+    // Chain of Responsibility: ต้องมี holding -> ต้องมีเป้าหมาย -> เป้าหมายรวม 100% (ประกอบที่ RebalanceValidationConfig)
+    private List<TradeOrder> validatedTrades(Portfolio portfolio, RebalanceStrategy strategy) {
+        List<TradeOrder> trades = computeTrades(portfolio.getId(), strategy);
+        validationChain.validate(portfolio, trades);
+        return trades;
+    }
+
+    private Portfolio findPortfolio(Long portfolioId) {
+        return portfolioRepository.findById(portfolioId)
+                .orElseThrow(() -> new ResourceNotFoundException("Portfolio not found: " + portfolioId));
     }
 
     private List<TradeOrder> computeTrades(Long portfolioId, RebalanceStrategy strategy) {
