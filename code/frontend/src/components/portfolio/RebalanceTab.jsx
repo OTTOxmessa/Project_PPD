@@ -19,16 +19,19 @@ function RebalanceTab({ portfolioId }) {
   const [loading, setLoading] = useState(true)
   const [executing, setExecuting] = useState(false)
   const [error, setError] = useState(null)
+  const [previewError, setPreviewError] = useState(null)
   const [result, setResult] = useState(null)
 
   const loadPreview = useCallback(async () => {
     setLoading(true)
-    setError(null)
+    setPreviewError(null)
     try {
       const res = await apiClient.get(`/portfolios/${portfolioId}/rebalance-plan`, { params: { method } })
       setOrders(res.data)
     } catch (err) {
-      setError(apiError(err, 'คำนวณแผนรีบาลานซ์ไม่สำเร็จ'))
+      // backend ตรวจความพร้อมของพอร์ตตั้งแต่ตอนดูแผน (เช่น เป้ารวมไม่ถึง 100%) — ล้างแผนเก่าแล้วแสดงเหตุผลแทน
+      setOrders([])
+      setPreviewError(apiError(err, 'คำนวณแผนรีบาลานซ์ไม่สำเร็จ'))
     } finally {
       setLoading(false)
     }
@@ -79,12 +82,15 @@ function RebalanceTab({ portfolioId }) {
         </p>
       </div>
 
+      {previewError && <p className="error-message">{previewError}</p>}
       {error && <p className="error-message">{error}</p>}
 
       <div className="card table-wrap">
         <h2>แผนการซื้อขาย (Preview)</h2>
         {loading ? (
           <p>กำลังคำนวณ...</p>
+        ) : previewError ? (
+          <p className="empty-state">ยังแสดงแผนไม่ได้ — แก้ตามข้อความด้านบน แล้วกลับมาที่แท็บนี้อีกครั้ง</p>
         ) : orders.length === 0 ? (
           <p className="empty-state">พอร์ตอยู่ในสัดส่วนเป้าหมายแล้ว ไม่ต้องรีบาลานซ์</p>
         ) : (
