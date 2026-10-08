@@ -1,0 +1,115 @@
+# CI/CD ของระบบจัดการพอร์ตการลงทุน
+# - ทุก push / Pull Request เข้า develop หรือ main: build + test backend, build frontend, build Docker image
+# - push เข้า main (ตอน release) และทุกขั้นผ่าน: สั่ง Render deploy ผ่าน Deploy Hook
+name: CI/CD
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  backend:
+    name: Backend build & test
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: code
+    # PortfolioSystemApplicationTests.contextLoads() ต้องใช้ PostgreSQL จริง
+    # ค่าตรงกับ application-dev.yml และ docker-compose.yml
+    services:
+      postgres:
+        image: postgres:15-alpine
+        env:
+          POSTGRES_DB: portfolio_db
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: root
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up JDK 25
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '25'
+          cache: maven
+
+      - name: Build and run tests
+        run: sh mvnw -B verify
+
+      - name: Upload test report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-report
+          path: code/target/surefire-reports/
+          if-no-files-found: ignore
+
+  frontend:
+    name: Frontend build
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: code/frontend
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: npm
+          cache-dependency-path: code/frontend/package-lock.json
+
+      - run: npm ci
+      - run: npm run build
+
+  docker:
+    name: Docker image build
+    needs: [backend, frontend]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: docker/setup-buildx-action@v3
+
+      - name: Build image (ไม่ push)
+        uses: docker/build-push-action@v6
+        with:
+          context: code
+          push: false
+          tags: portfolio-system:${{ github.sha }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  deploy:
+    name: Deploy to Render
+    needs: docker
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger Render deploy hook
+        env:
+          DEPLOY_HOOK: ${{ secrets.RENDER_DEPLOY_HOOK_URL }}
+        run: |
+          if [ -z "$DEPLOY_HOOK" ]; then
+            echo "::warning::ยังไม่ได้ตั้ง secret RENDER_DEPLOY_HOOK_URL จึงข้ามขั้น deploy"
+            exit 0
+          fi
+          curl -fsS -X POST "$DEPLOY_HOOK"
