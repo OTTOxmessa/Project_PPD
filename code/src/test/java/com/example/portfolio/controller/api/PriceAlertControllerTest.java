@@ -59,7 +59,7 @@ class PriceAlertControllerTest {
     }
 
     private static PriceAlert alert(AlertStatus status, String target) {
-        return PriceAlert.builder().id(3L).asset(Asset.builder().id(1L).symbol("PTT").build())
+        return PriceAlert.builder().id(3L).asset(Asset.builder().id(1L).symbol("AAPL").build())
                 .condition(AlertCondition.PRICE_BELOW).targetPrice(new BigDecimal(target)).status(status).build();
     }
 
@@ -70,7 +70,7 @@ class PriceAlertControllerTest {
 
         mockMvc.perform(get("/api/v1/portfolios/5/alerts"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$[0].symbol").value("PTT"));
+                .andExpect(jsonPath("$[0].symbol").value("AAPL"));
 
         verify(portfolioService).getByIdForUser(5L, 1L);
     }

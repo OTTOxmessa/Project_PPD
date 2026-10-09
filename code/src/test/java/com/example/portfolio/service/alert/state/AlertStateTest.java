@@ -36,7 +36,7 @@ class AlertStateTest {
     private static PriceAlert alert(AlertCondition condition, String target) {
         return PriceAlert.builder()
                 .id(1L)
-                .asset(Asset.builder().id(1L).symbol("PTT").build())
+                .asset(Asset.builder().id(1L).symbol("AAPL").build())
                 .condition(condition)
                 .targetPrice(new BigDecimal(target))
                 .build();

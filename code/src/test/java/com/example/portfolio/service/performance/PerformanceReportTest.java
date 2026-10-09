@@ -62,12 +62,12 @@ class PerformanceReportTest {
             PerformanceReport report = fixedValues(
                     Map.of(FROM, "1000", TO, "1100"),
                     Map.of(FROM, "1500", TO, "1560"))
-                    .generateReport(1L, "SET", FROM, TO);
+                    .generateReport(1L, "SPX", FROM, TO);
 
             assertThat(report.portfolioReturnPercent()).isEqualByComparingTo("10");
             assertThat(report.benchmarkReturnPercent()).isEqualByComparingTo("4");
             assertThat(report.outperformancePercent()).isEqualByComparingTo("6");
-            assertThat(report.benchmarkCode()).isEqualTo("SET");
+            assertThat(report.benchmarkCode()).isEqualTo("SPX");
         }
 
         @Test
@@ -76,7 +76,7 @@ class PerformanceReportTest {
             PerformanceReport report = fixedValues(
                     Map.of(FROM, "2000", TO, "1900"),
                     Map.of(FROM, "100", TO, "105"))
-                    .generateReport(1L, "SET", FROM, TO);
+                    .generateReport(1L, "SPX", FROM, TO);
 
             assertThat(report.outperformancePercent()).isEqualByComparingTo("-10");
         }
@@ -87,7 +87,7 @@ class PerformanceReportTest {
             PerformanceReport report = fixedValues(
                     Map.of(FROM, "0", TO, "500"),
                     Map.of(FROM, "100", TO, "110"))
-                    .generateReport(1L, "SET", FROM, TO);
+                    .generateReport(1L, "SPX", FROM, TO);
 
             assertThat(report.portfolioReturnPercent()).isEqualByComparingTo("0");
         }
@@ -108,10 +108,10 @@ class PerformanceReportTest {
         @InjectMocks
         private BenchmarkComparisonService service;
 
-        private final Asset ptt = Asset.builder().id(1L).symbol("PTT").build();
+        private final Asset aapl = Asset.builder().id(1L).symbol("AAPL").build();
 
         private Transaction tx(TransactionType type, String qty) {
-            return Transaction.builder().asset(ptt).type(type).quantity(new BigDecimal(qty)).price(BigDecimal.ONE).build();
+            return Transaction.builder().asset(aapl).type(type).quantity(new BigDecimal(qty)).price(BigDecimal.ONE).build();
         }
 
         @Test
@@ -126,15 +126,15 @@ class PerformanceReportTest {
                     .thenReturn(Optional.of(PriceHistory.builder().close(new BigDecimal("100")).build()));
             when(priceHistoryRepository.findTopByAssetIdAndPriceDateLessThanEqualOrderByPriceDateDesc(1L, TO))
                     .thenReturn(Optional.of(PriceHistory.builder().close(new BigDecimal("200")).build()));
-            // ดัชนี SET 1,000 → 1,100 = +10%
-            when(marketIndexRepository.findByIndexCode("SET"))
-                    .thenReturn(Optional.of(MarketIndex.builder().id(9L).indexCode("SET").build()));
+            // ดัชนี S&P 500 1,000 → 1,100 = +10%
+            when(marketIndexRepository.findByIndexCode("SPX"))
+                    .thenReturn(Optional.of(MarketIndex.builder().id(9L).indexCode("SPX").build()));
             when(indexPriceHistoryRepository.findTopByMarketIndexIdAndPriceDateLessThanEqualOrderByPriceDateDesc(9L, FROM))
                     .thenReturn(Optional.of(IndexPriceHistory.builder().closeValue(new BigDecimal("1000")).build()));
             when(indexPriceHistoryRepository.findTopByMarketIndexIdAndPriceDateLessThanEqualOrderByPriceDateDesc(9L, TO))
                     .thenReturn(Optional.of(IndexPriceHistory.builder().closeValue(new BigDecimal("1100")).build()));
 
-            PerformanceReport report = service.generateReport(1L, "SET", FROM, TO);
+            PerformanceReport report = service.generateReport(1L, "SPX", FROM, TO);
 
             assertThat(report.portfolioReturnPercent()).isEqualByComparingTo("20");
             assertThat(report.benchmarkReturnPercent()).isEqualByComparingTo("10");

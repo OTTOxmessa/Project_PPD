@@ -61,7 +61,7 @@ class TransactionControllerTest {
     private static Transaction saved(TransactionType type) {
         return Transaction.builder()
                 .id(100L)
-                .asset(Asset.builder().id(10L).symbol("PTT").build())
+                .asset(Asset.builder().id(10L).symbol("AAPL").build())
                 .type(type)
                 .quantity(new BigDecimal("100"))
                 .price(new BigDecimal("35.5"))
@@ -80,7 +80,7 @@ class TransactionControllerTest {
                         .content("{\"assetId\":10,\"type\":\"BUY\",\"quantity\":100,\"price\":35.5}"))
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.id").value(100))
-                .andExpect(jsonPath("$.symbol").value("PTT"))
+                .andExpect(jsonPath("$.symbol").value("AAPL"))
                 .andExpect(jsonPath("$.type").value("BUY"));
 
         verify(portfolioService).getByIdForUser(5L, 1L);

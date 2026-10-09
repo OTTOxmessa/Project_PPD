@@ -10,6 +10,7 @@ import com.example.portfolio.service.AssetService;
 import com.example.portfolio.service.PriceHistoryService;
 import com.example.portfolio.service.market.SymbolCatalog;
 import com.example.portfolio.service.market.SymbolInfo;
+import com.example.portfolio.service.market.UsMarket;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -44,6 +45,7 @@ public class AssetServiceImpl implements AssetService {
     @Transactional
     public Asset create(Asset asset) {
         asset.setSymbol(normalize(asset.getSymbol()));
+        asset.setExchange(UsMarket.requireSupported(asset.getSymbol(), asset.getAssetType(), asset.getExchange()));
         if (assetRepository.existsBySymbol(asset.getSymbol())) {
             throw new IllegalStateException("มีสินทรัพย์ symbol " + asset.getSymbol() + " อยู่แล้ว");
         }
@@ -65,8 +67,10 @@ public class AssetServiceImpl implements AssetService {
             }
             AssetType resolvedType = assetType != null ? assetType
                     : info.map(SymbolInfo::assetType).orElse(AssetType.STOCK);
-            String resolvedExchange = hasText(exchange) ? exchange.trim()
+            String requestedExchange = hasText(exchange) ? exchange.trim()
                     : info.map(SymbolInfo::exchange).orElse(null);
+            // สินทรัพย์ใหม่ต้องเป็นหุ้น/ETF ตลาดสหรัฐฯ (USD) เท่านั้น — ตรวจก่อนบันทึก
+            String resolvedExchange = UsMarket.requireSupported(normalized, resolvedType, requestedExchange);
             return assetRepository.save(Asset.builder()
                     .symbol(normalized)
                     .name(resolvedName)

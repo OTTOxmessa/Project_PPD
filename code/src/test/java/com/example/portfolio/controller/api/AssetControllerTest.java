@@ -39,8 +39,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @ExtendWith(MockitoExtension.class)
 class AssetControllerTest {
 
-    private static final String PTT_JSON =
-            "{\"symbol\":\"PTT\",\"name\":\"PTT PCL\",\"assetType\":\"STOCK\",\"exchange\":\"SET\"}";
+    private static final String AAPL_JSON =
+            "{\"symbol\":\"AAPL\",\"name\":\"Apple Inc.\",\"assetType\":\"STOCK\",\"exchange\":\"US\"}";
 
     @Mock
     private AssetService assetService;
@@ -57,18 +57,18 @@ class AssetControllerTest {
                 new AssetController(assetService, assetMaintenanceService, quoteService));
     }
 
-    private static Asset ptt(String name) {
-        return Asset.builder().id(1L).symbol("PTT").name(name).assetType(AssetType.STOCK).exchange("SET").build();
+    private static Asset aapl(String name) {
+        return Asset.builder().id(1L).symbol("AAPL").name(name).assetType(AssetType.STOCK).exchange("US").build();
     }
 
     @Test
     @DisplayName("GET /assets → 200 รายการสินทรัพย์")
     void list() throws Exception {
-        when(assetService.getAll()).thenReturn(List.of(ptt("PTT PCL")));
+        when(assetService.getAll()).thenReturn(List.of(aapl("Apple Inc.")));
 
         mockMvc.perform(get("/api/v1/assets"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$[0].symbol").value("PTT"));
+                .andExpect(jsonPath("$[0].symbol").value("AAPL"));
     }
 
     @Test
@@ -86,9 +86,9 @@ class AssetControllerTest {
     @Test
     @DisplayName("POST /assets → 201 Created")
     void create() throws Exception {
-        when(assetService.create(any(Asset.class))).thenReturn(ptt("PTT PCL"));
+        when(assetService.create(any(Asset.class))).thenReturn(aapl("Apple Inc."));
 
-        mockMvc.perform(post("/api/v1/assets").contentType(MediaType.APPLICATION_JSON).content(PTT_JSON))
+        mockMvc.perform(post("/api/v1/assets").contentType(MediaType.APPLICATION_JSON).content(AAPL_JSON))
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.id").value(1));
     }
@@ -97,7 +97,7 @@ class AssetControllerTest {
     @DisplayName("POST /assets ไม่ระบุประเภท → 400 และไม่เรียก service")
     void createValidationError() throws Exception {
         mockMvc.perform(post("/api/v1/assets").contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"symbol\":\"PTT\",\"name\":\"PTT PCL\"}"))
+                        .content("{\"symbol\":\"AAPL\",\"name\":\"Apple Inc.\"}"))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.details[0]").value(org.hamcrest.Matchers.containsString("assetType")));
 
@@ -107,9 +107,9 @@ class AssetControllerTest {
     @Test
     @DisplayName("POST /assets symbol ซ้ำ → 409 Conflict")
     void createDuplicate() throws Exception {
-        when(assetService.create(any(Asset.class))).thenThrow(new IllegalStateException("มีสินทรัพย์ symbol PTT อยู่แล้ว"));
+        when(assetService.create(any(Asset.class))).thenThrow(new IllegalStateException("มีสินทรัพย์ symbol AAPL อยู่แล้ว"));
 
-        mockMvc.perform(post("/api/v1/assets").contentType(MediaType.APPLICATION_JSON).content(PTT_JSON))
+        mockMvc.perform(post("/api/v1/assets").contentType(MediaType.APPLICATION_JSON).content(AAPL_JSON))
                 .andExpect(status().isConflict())
                 .andExpect(jsonPath("$.status").value(409));
     }
@@ -117,16 +117,16 @@ class AssetControllerTest {
     @Test
     @DisplayName("PUT /assets/{id} → 200 พร้อมค่าที่แก้แล้ว")
     void update() throws Exception {
-        when(assetMaintenanceService.update(eq(1L), any(Asset.class))).thenReturn(ptt("PTT Public Company"));
+        when(assetMaintenanceService.update(eq(1L), any(Asset.class))).thenReturn(aapl("Apple Incorporated"));
 
         mockMvc.perform(put("/api/v1/assets/1").contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"symbol\":\"PTT\",\"name\":\"PTT Public Company\",\"assetType\":\"STOCK\"}"))
+                        .content("{\"symbol\":\"AAPL\",\"name\":\"Apple Incorporated\",\"assetType\":\"STOCK\"}"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.name").value("PTT Public Company"));
+                .andExpect(jsonPath("$.name").value("Apple Incorporated"));
 
         ArgumentCaptor<Asset> captor = ArgumentCaptor.forClass(Asset.class);
         verify(assetMaintenanceService).update(eq(1L), captor.capture());
-        assertThat(captor.getValue().getName()).isEqualTo("PTT Public Company");
+        assertThat(captor.getValue().getName()).isEqualTo("Apple Incorporated");
     }
 
     @Test
@@ -135,7 +135,7 @@ class AssetControllerTest {
         when(assetMaintenanceService.update(eq(1L), any(Asset.class)))
                 .thenThrow(new IllegalStateException("เปลี่ยน symbol ไม่ได้"));
 
-        mockMvc.perform(put("/api/v1/assets/1").contentType(MediaType.APPLICATION_JSON).content(PTT_JSON))
+        mockMvc.perform(put("/api/v1/assets/1").contentType(MediaType.APPLICATION_JSON).content(AAPL_JSON))
                 .andExpect(status().isConflict());
     }
 
@@ -151,11 +151,11 @@ class AssetControllerTest {
     @Test
     @DisplayName("DELETE /assets/{id} ที่ยังมีพอร์ตถือ → 409")
     void deleteInUse() throws Exception {
-        doThrow(new IllegalStateException("ลบ PTT ไม่ได้")).when(assetMaintenanceService).delete(1L);
+        doThrow(new IllegalStateException("ลบ AAPL ไม่ได้")).when(assetMaintenanceService).delete(1L);
 
         mockMvc.perform(delete("/api/v1/assets/1"))
                 .andExpect(status().isConflict())
-                .andExpect(jsonPath("$.message").value("ลบ PTT ไม่ได้"));
+                .andExpect(jsonPath("$.message").value("ลบ AAPL ไม่ได้"));
     }
 
     @Test
@@ -173,10 +173,10 @@ class AssetControllerTest {
     @Test
     @DisplayName("PUT /assets/by-symbol/{symbol} → 200 หา/สร้างจาก symbol ใน URL (idempotent)")
     void ensureBySymbol() throws Exception {
-        when(assetService.ensure(eq("PTT"), isNull(), isNull(), isNull(), eq(new BigDecimal("34.5"))))
-                .thenReturn(ptt("PTT PCL"));
+        when(assetService.ensure(eq("AAPL"), isNull(), isNull(), isNull(), eq(new BigDecimal("34.5"))))
+                .thenReturn(aapl("Apple Inc."));
 
-        mockMvc.perform(put("/api/v1/assets/by-symbol/PTT").contentType(MediaType.APPLICATION_JSON)
+        mockMvc.perform(put("/api/v1/assets/by-symbol/AAPL").contentType(MediaType.APPLICATION_JSON)
                         .content("{\"referencePrice\":34.5}"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value(1));

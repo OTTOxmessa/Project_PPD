@@ -50,7 +50,7 @@ class HoldingServiceImplTest {
     private static Holding holding(String qty, String avgCost) {
         return Holding.builder()
                 .portfolio(Portfolio.builder().id(1L).build())
-                .asset(Asset.builder().id(10L).symbol("PTT").build())
+                .asset(Asset.builder().id(10L).symbol("AAPL").build())
                 .quantity(new BigDecimal(qty))
                 .avgCost(new BigDecimal(avgCost))
                 .build();
@@ -65,7 +65,7 @@ class HoldingServiceImplTest {
     void firstBuyCreatesHolding() {
         when(holdingRepository.findByPortfolioIdAndAssetId(1L, 10L)).thenReturn(Optional.empty());
         when(portfolioRepository.findById(1L)).thenReturn(Optional.of(Portfolio.builder().id(1L).build()));
-        when(assetRepository.findById(10L)).thenReturn(Optional.of(Asset.builder().id(10L).symbol("PTT").build()));
+        when(assetRepository.findById(10L)).thenReturn(Optional.of(Asset.builder().id(10L).symbol("AAPL").build()));
         saveReturnsArgument();
 
         Holding result = holdingService.applyTransaction(1L, 10L, TransactionType.BUY,
@@ -73,7 +73,7 @@ class HoldingServiceImplTest {
 
         assertThat(result.getQuantity()).isEqualByComparingTo("100");
         assertThat(result.getAvgCost()).isEqualByComparingTo("35.50");
-        assertThat(result.getAsset().getSymbol()).isEqualTo("PTT");
+        assertThat(result.getAsset().getSymbol()).isEqualTo("AAPL");
     }
 
     @Test

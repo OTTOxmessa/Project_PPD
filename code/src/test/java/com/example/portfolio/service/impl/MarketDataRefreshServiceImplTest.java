@@ -39,12 +39,12 @@ class MarketDataRefreshServiceImplTest {
     @Test
     @DisplayName("นับเฉพาะตัวที่อัปเดตสำเร็จ ตัวที่ throw ถูกข้ามไป")
     void countsSuccessesAndSurvivesFailures() {
-        Asset ptt = Asset.builder().id(1L).symbol("PTT").build();
+        Asset aapl = Asset.builder().id(1L).symbol("AAPL").build();
         Asset broken = Asset.builder().id(2L).symbol("BROKEN").build();
         Asset bond = Asset.builder().id(3L).symbol("TBOND").build();
-        MarketIndex set = MarketIndex.builder().id(9L).indexCode("SET").build();
-        when(assetRepository.findAll()).thenReturn(List.of(ptt, broken, bond));
-        when(priceHistoryService.importRealHistory(ptt)).thenReturn(true);
+        MarketIndex set = MarketIndex.builder().id(9L).indexCode("SPX").build();
+        when(assetRepository.findAll()).thenReturn(List.of(aapl, broken, bond));
+        when(priceHistoryService.importRealHistory(aapl)).thenReturn(true);
         when(priceHistoryService.importRealHistory(broken)).thenThrow(new RuntimeException("HTTP 429"));
         when(priceHistoryService.importRealHistory(bond)).thenReturn(false);
         when(marketIndexRepository.findAll()).thenReturn(List.of(set));

@@ -29,21 +29,21 @@
 | [`TransactionServiceImpl.java`](../code/src/main/java/com/example/portfolio/service/impl/TransactionServiceImpl.java#L40) | 40 | `record(...)` บันทึกธุรกรรม + สั่งปรับ holding ใน transaction เดียว | **Business** — กฎทางธุรกิจอยู่ที่ service เท่านั้น |
 | [`TransactionRepository.java`](../code/src/main/java/com/example/portfolio/repository/TransactionRepository.java#L11) | 11 | Spring Data JPA interface | **Persistence** — อ่าน/เขียนฐานข้อมูลที่ repository เท่านั้น |
 | [`TransactionMapper.java`](../code/src/main/java/com/example/portfolio/mapper/TransactionMapper.java#L11) | 11 | แปลง Entity เป็น Response DTO | **Mapping** — แยกจาก controller และ service |
-| [`GlobalExceptionHandler.java`](../code/src/main/java/com/example/portfolio/exception/GlobalExceptionHandler.java#L25) | 25 | แปลง exception เป็น ErrorResponse | **Error handling** — จุดเดียวของทั้งระบบ controller ไม่ต้อง try/catch เอง |
+| [`GlobalExceptionHandler.java`](../code/src/main/java/com/example/portfolio/exception/GlobalExceptionHandler.java#L28) | 28 | แปลง exception เป็น ErrorResponse | **Error handling** — จุดเดียวของทั้งระบบ controller ไม่ต้อง try/catch เอง |
 
 ### Service ที่แยกตามหน้าที่
 
 | ไฟล์ | บรรทัด | สิ่งที่เห็นในโค้ด | เหตุผล |
 |---|---|---|---|
-| [`PortfolioServiceImpl.java`](../code/src/main/java/com/example/portfolio/service/impl/PortfolioServiceImpl.java#L17) | 17 | CRUD พอร์ตอย่างเดียว | การคำนวณมูลค่า/กำไรเป็นอีกเรื่อง จึงแยกไป `PortfolioValuationServiceImpl` |
+| [`PortfolioServiceImpl.java`](../code/src/main/java/com/example/portfolio/service/impl/PortfolioServiceImpl.java#L18) | 18 | CRUD พอร์ตอย่างเดียว | การคำนวณมูลค่า/กำไรเป็นอีกเรื่อง จึงแยกไป `PortfolioValuationServiceImpl` |
 | [`PortfolioValuationServiceImpl.java`](../code/src/main/java/com/example/portfolio/service/impl/PortfolioValuationServiceImpl.java#L29) | 29 | คำนวณมูลค่าตลาด ต้นทุน กำไรของแต่ละพอร์ต | เปลี่ยนสูตรมูลค่าได้โดยไม่กระทบ CRUD |
-| [`AssetServiceImpl.java`](../code/src/main/java/com/example/portfolio/service/impl/AssetServiceImpl.java#L25) | 25 | จัดการข้อมูลสินทรัพย์ (สร้าง/หา/ราคาย้อนหลัง) | ไม่มีโค้ดค้นหา/จัดอันดับปนอยู่แล้ว |
-| [`SymbolSearchServiceImpl.java`](../code/src/main/java/com/example/portfolio/service/impl/SymbolSearchServiceImpl.java#L32) | 32 | ค้นหาและจัดอันดับหุ้นสำหรับ auto-complete | แยกออกจาก `AssetServiceImpl` เพราะเปลี่ยนด้วยเหตุผลต่างกัน (กติกาการค้นหา) |
+| [`AssetServiceImpl.java`](../code/src/main/java/com/example/portfolio/service/impl/AssetServiceImpl.java#L26) | 26 | จัดการข้อมูลสินทรัพย์ (สร้าง/หา/ราคาย้อนหลัง) | ไม่มีโค้ดค้นหา/จัดอันดับปนอยู่แล้ว |
+| [`SymbolSearchServiceImpl.java`](../code/src/main/java/com/example/portfolio/service/impl/SymbolSearchServiceImpl.java#L34) | 34 | ค้นหาและจัดอันดับหุ้นสำหรับ auto-complete | แยกออกจาก `AssetServiceImpl` เพราะเปลี่ยนด้วยเหตุผลต่างกัน (กติกาการค้นหา) |
 | [`PriceAlertServiceImpl.java`](../code/src/main/java/com/example/portfolio/service/impl/PriceAlertServiceImpl.java#L21) | 21 | สร้าง/ดู/ลบ alert ที่ผู้ใช้ตั้ง | แยกจากการตรวจราคา |
 | [`PriceAlertMonitorServiceImpl.java`](../code/src/main/java/com/example/portfolio/service/impl/PriceAlertMonitorServiceImpl.java#L63) | 63 | ตรวจราคาเทียบ alert ทุกตัวแล้วเปลี่ยนสถานะ | งานเบื้องหลังของ scheduler เป็นคนละหน้าที่กับ CRUD |
-| [`PriceHistoryServiceImpl.java`](../code/src/main/java/com/example/portfolio/service/impl/PriceHistoryServiceImpl.java#L70) | 70 | นำเข้าราคาของสินทรัพย์หนึ่งตัว (จริงหรือสำรอง) | ไม่ต้องรู้เรื่องการวนทั้งระบบหรือการเว้นจังหวะ |
+| [`PriceHistoryServiceImpl.java`](../code/src/main/java/com/example/portfolio/service/impl/PriceHistoryServiceImpl.java#L71) | 71 | นำเข้าราคาของสินทรัพย์หนึ่งตัว (จริงหรือสำรอง) | ไม่ต้องรู้เรื่องการวนทั้งระบบหรือการเว้นจังหวะ |
 | [`MarketDataRefreshServiceImpl.java`](../code/src/main/java/com/example/portfolio/service/impl/MarketDataRefreshServiceImpl.java#L41) | 41 | วนอัปเดตทุกสินทรัพย์ เว้นจังหวะกันโดนจำกัด | แยกจากการนำเข้าราคารายตัว |
-| [`RebalanceServiceImpl.java`](../code/src/main/java/com/example/portfolio/service/impl/RebalanceServiceImpl.java#L71) | 71 | ประสานงาน: คำนวณ → ตรวจ → ซื้อขาย → บันทึก log | การสร้าง Command และการจัดรูป log แยกไปอีก 2 คลาสด้านล่าง |
+| [`RebalanceServiceImpl.java`](../code/src/main/java/com/example/portfolio/service/impl/RebalanceServiceImpl.java#L75) | 75 | ประสานงาน: คำนวณ → ตรวจ → ซื้อขาย → บันทึก log | การสร้าง Command และการจัดรูป log แยกไปอีก 2 คลาสด้านล่าง |
 | [`RebalanceCommands.java`](../code/src/main/java/com/example/portfolio/service/rebalance/RebalanceCommands.java#L30) | 30 | สร้าง Command จากคำสั่งซื้อขาย | หน้าที่ "สร้าง" แยกจาก "ใช้" |
 | [`TradeOrderFormatter.java`](../code/src/main/java/com/example/portfolio/service/rebalance/TradeOrderFormatter.java#L13) | 13 | แปลงคำสั่งเป็น JSON เก็บใน log | รูปแบบ log เปลี่ยนได้โดยไม่แตะ service |
 | [`PivotPointCalculator.java`](../code/src/main/java/com/example/portfolio/service/analysis/PivotPointCalculator.java#L22) | 22 | สูตร Pivot Point อย่างเดียว | หนึ่งคลาสต่อหนึ่งสูตร |
@@ -59,7 +59,7 @@
 | [`AllocationServiceImpl.java`](../code/src/main/java/com/example/portfolio/service/impl/AllocationServiceImpl.java#L55) | 55 | เลือก `AllocationStrategy` จากชื่อ | เพิ่มวิธีคำนวณสัดส่วนใหม่ = เพิ่มคลาส `@Component` ที่มี `key()` ใหม่ |
 | [`RiskBasedAllocationStrategy.java`](../code/src/main/java/com/example/portfolio/service/allocation/RiskBasedAllocationStrategy.java#L20) | 20 | `key()` = "risk" | ตัวอย่าง Strategy ที่เพิ่มได้โดยไม่แก้ service |
 | [`SupportResistanceServiceImpl.java`](../code/src/main/java/com/example/portfolio/service/impl/SupportResistanceServiceImpl.java#L29) | 29 | เลือกสูตรแนวรับ-แนวต้าน (pivot / ma) | เพิ่มสูตรใหม่ เช่น Fibonacci = เพิ่มหนึ่งคลาส |
-| [`RebalanceServiceImpl.java`](../code/src/main/java/com/example/portfolio/service/impl/RebalanceServiceImpl.java#L72) | 72 | เลือกวิธีรีบาลานซ์ (threshold / calendar) | ไม่ต้องแก้ service เมื่อมีวิธีใหม่ |
+| [`RebalanceServiceImpl.java`](../code/src/main/java/com/example/portfolio/service/impl/RebalanceServiceImpl.java#L76) | 76 | เลือกวิธีรีบาลานซ์ (threshold / calendar) | ไม่ต้องแก้ service เมื่อมีวิธีใหม่ |
 | [`PendingState.java`](../code/src/main/java/com/example/portfolio/service/alert/state/PendingState.java#L41) | 41 | เลือก `AlertConditionEvaluator` ตามเงื่อนไขของ alert | แทน `switch (condition)` เดิม — เพิ่มเงื่อนไขใหม่ = เพิ่ม evaluator หนึ่งคลาส |
 | [`PriceAlertMonitorServiceImpl.java`](../code/src/main/java/com/example/portfolio/service/impl/PriceAlertMonitorServiceImpl.java#L45) | 45 | เลือก `AlertState` ตามสถานะปัจจุบัน | แทน `if (status == PENDING) ... if (status == TRIGGERED)` เดิม |
 | [`HoldingServiceImpl.java`](../code/src/main/java/com/example/portfolio/service/impl/HoldingServiceImpl.java#L53) | 53 | เลือก `HoldingUpdateRule` ตามประเภทธุรกรรม | แทน `switch (type)` เดิม — ซื้อ/ขายอยู่คนละคลาส |
@@ -155,9 +155,9 @@ Service ขึ้นกับ interface ไม่ใช่คลาสตัว�
 | [`AuthServiceImpl.java`](../code/src/main/java/com/example/portfolio/service/impl/AuthServiceImpl.java#L20) | 20 | ออก token ผ่าน `TokenProvider` | เปลี่ยนจาก JWT เป็นแบบอื่นได้โดยไม่แก้ service |
 | [`JwtAuthenticationFilter.java`](../code/src/main/java/com/example/portfolio/security/JwtAuthenticationFilter.java#L22) | 22 | filter ก็ขึ้นกับ interface เดียวกัน | ไม่ผูกกับ `JwtUtil` |
 | [`TriggeredState.java`](../code/src/main/java/com/example/portfolio/service/alert/state/TriggeredState.java#L16) | 16 | State ส่งต่อให้ Observer ผ่าน interface | ไม่ผูกกับ `AlertSubject` |
-| [`PriceHistoryServiceImpl.java`](../code/src/main/java/com/example/portfolio/service/impl/PriceHistoryServiceImpl.java#L34) | 34 | แหล่งราคาจริงผ่าน interface (Adapter) | เปลี่ยนจาก Yahoo เป็นเจ้าอื่นได้ |
-| [`PriceHistoryServiceImpl.java`](../code/src/main/java/com/example/portfolio/service/impl/PriceHistoryServiceImpl.java#L35) | 35 | ทางสำรองผ่าน interface | ไม่ผูกกับตัวสร้างข้อมูลจำลอง |
-| [`AssetServiceImpl.java`](../code/src/main/java/com/example/portfolio/service/impl/AssetServiceImpl.java#L29) | 29 | รายชื่อหุ้นอ้างอิงผ่าน interface | วันหน้าเปลี่ยนเป็น API ได้ |
+| [`PriceHistoryServiceImpl.java`](../code/src/main/java/com/example/portfolio/service/impl/PriceHistoryServiceImpl.java#L35) | 35 | แหล่งราคาจริงผ่าน interface (Adapter) | เปลี่ยนจาก Yahoo เป็นเจ้าอื่นได้ |
+| [`PriceHistoryServiceImpl.java`](../code/src/main/java/com/example/portfolio/service/impl/PriceHistoryServiceImpl.java#L36) | 36 | ทางสำรองผ่าน interface | ไม่ผูกกับตัวสร้างข้อมูลจำลอง |
+| [`AssetServiceImpl.java`](../code/src/main/java/com/example/portfolio/service/impl/AssetServiceImpl.java#L30) | 30 | รายชื่อหุ้นอ้างอิงผ่าน interface | วันหน้าเปลี่ยนเป็น API ได้ |
 | [`PriceAlertMonitorServiceImpl.java`](../code/src/main/java/com/example/portfolio/service/impl/PriceAlertMonitorServiceImpl.java#L28) | 28 | ราคาล่าสุดผ่าน interface | สลับ `@Primary` ได้โดยไม่แก้ service |
 | [`SecurityConfig.java`](../code/src/main/java/com/example/portfolio/config/SecurityConfig.java#L21) | 21 | จุดประกอบระบบ (composition root) | `config/` เป็นที่เดียวที่รู้จักคลาสตัวจริงเพื่อต่อสายเข้าด้วยกัน — ยกเว้นในกฎของ test |
 

@@ -54,27 +54,21 @@ public class YahooFinancePriceSource implements HistoricalPriceSource {
         return "Yahoo Finance";
     }
 
-    // PTT (SET) -> PTT.BK, BTC (THB) -> BTC-THB, BRK.B -> BRK-B, พันธบัตร/เงินสด -> ไม่รองรับ
+    // ระบบรองรับเฉพาะตลาดสหรัฐฯ (ดู UsMarket): AAPL -> AAPL, BRK.B -> BRK-B (Yahoo ใช้ขีดแทนจุด)
+    // พันธบัตร/เงินสด/คริปโต -> ไม่ดึงราคา (ใช้ข้อมูลจำลองแทน)
     @Override
     public Optional<String> resolveTicker(Asset asset) {
-        String symbol = asset.getSymbol().toUpperCase(Locale.ROOT);
         AssetType type = asset.getAssetType();
-        if (type == AssetType.BOND || type == AssetType.CASH) {
+        if (type != AssetType.STOCK && type != AssetType.ETF) {
             return Optional.empty();
         }
-        if (type == AssetType.CRYPTO) {
-            String quote = asset.getName() != null && asset.getName().contains("(THB)") ? "THB" : "USD";
-            return Optional.of(symbol + "-" + quote);
-        }
-        if ("SET".equalsIgnoreCase(asset.getExchange())) {
-            return Optional.of(symbol + ".BK");
-        }
-        return Optional.of(symbol.replace('.', '-'));
+        return Optional.of(asset.getSymbol().toUpperCase(Locale.ROOT).replace('.', '-'));
     }
 
+    // SPX -> ^GSPC (S&P 500), DJI -> ^DJI (Dow Jones)
     @Override
     public Optional<String> resolveIndexTicker(String indexCode) {
-        return "SET".equalsIgnoreCase(indexCode) ? Optional.of("^SET.BK") : Optional.empty();
+        return UsMarket.indexTicker(indexCode);
     }
 
     @Override

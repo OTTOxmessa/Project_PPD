@@ -1,7 +1,8 @@
 import { useEffect, useMemo, useState } from 'react'
 import apiClient from '../../api/client.js'
 import { ensureAsset } from '../../api/assets.js'
-import { apiError, daysAgo, formatNumber, formatPercent, today } from '../../utils/format.js'
+import { apiError, daysAgo, formatPercent, today } from '../../utils/format.js'
+import { useCurrency } from '../../context/CurrencyContext.jsx'
 import { toWeekly } from '../../utils/indicators.js'
 import PriceChart, { MA_CONFIG } from '../chart/PriceChart.jsx'
 import SymbolSearch from '../SymbolSearch.jsx'
@@ -17,6 +18,7 @@ const RANGES = [
 
 // คอลัมน์กลาง: กระดานเทรด
 function TradingBoard({ assetId, onSelectAsset, watchlistIds, onWatchlistChanged }) {
+  const { currency, convert, money } = useCurrency()
   const [quote, setQuote] = useState(null)
   const [bars, setBars] = useState([])
   const [chartType, setChartType] = useState('candle')
@@ -87,6 +89,14 @@ function TradingBoard({ assetId, onSelectAsset, watchlistIds, onWatchlistChanged
 
   const displayBars = useMemo(() => (timeframe === 'week' ? toWeekly(bars) : bars), [bars, timeframe])
 
+  // แสดงเป็นเงินบาท: คูณราคาทุกแท่งและแนวรับ-แนวต้านด้วยอัตราเดียวกัน (RSI ไม่เปลี่ยน MA/MACD เปลี่ยนตามสัดส่วน)
+  const chartBars = useMemo(() => displayBars.map((b) => ({
+    ...b, open: convert(b.open), high: convert(b.high), low: convert(b.low), close: convert(b.close),
+  })), [displayBars, convert])
+  const chartLevels = useMemo(() => (levels
+    ? { ...levels, resistance: convert(levels.resistance), pivot: convert(levels.pivot), support: convert(levels.support) }
+    : null), [levels, convert])
+
   const handleSearchSelect = async (suggestion) => {
     try {
       onSelectAsset(await ensureAsset(suggestion))
@@ -112,7 +122,7 @@ function TradingBoard({ assetId, onSelectAsset, watchlistIds, onWatchlistChanged
   return (
     <div className="panel board">
       <div className="board-search">
-        <SymbolSearch onSelect={handleSearchSelect} placeholder="ค้นหาหุ้นเพื่อเปิดกราฟ เช่น MSFT, NVDA, PTT" />
+        <SymbolSearch onSelect={handleSearchSelect} placeholder="ค้นหาหุ้นเพื่อเปิดกราฟ เช่น MSFT, NVDA, VOO" />
       </div>
 
       {!assetId ? (
@@ -136,9 +146,9 @@ function TradingBoard({ assetId, onSelectAsset, watchlistIds, onWatchlistChanged
                   ? <span className="source-tag real">Yahoo Finance</span>
                   : <span className="source-tag" title="เชื่อมต่อแหล่งราคาจริงไม่ได้ หรือไม่มีข้อมูลหุ้นนี้">ข้อมูลจำลอง</span>}
               </div>
-              <div className="board-last">{formatNumber(quote?.price)}</div>
+              <div className="board-last">{money(quote?.price)} <span className="muted small">{currency}</span></div>
               <div className={tone}>
-                {change === null ? '-' : `${change >= 0 ? '▲' : '▼'} ${formatNumber(Math.abs(Number(quote.change)))} (${formatPercent(change)}) วันล่าสุด`}
+                {change === null ? '-' : `${change >= 0 ? '▲' : '▼'} ${money(Math.abs(Number(quote.change)))} (${formatPercent(change)}) วันล่าสุด`}
               </div>
             </div>
           </div>
@@ -190,17 +200,17 @@ function TradingBoard({ assetId, onSelectAsset, watchlistIds, onWatchlistChanged
           ) : (
             <>
               <PriceChart
-                bars={displayBars}
+                bars={chartBars}
                 chartType={chartType}
                 overlays={overlays}
-                levels={showLevels ? levels : null}
+                levels={showLevels ? chartLevels : null}
                 visibleFrom={rangeFrom}
               />
               {showLevels && levels && (
                 <div className="levels-bar">
-                  <span>แนวต้าน <strong className="text-red">{formatNumber(levels.resistance)}</strong></span>
-                  <span>Pivot <strong>{formatNumber(levels.pivot)}</strong></span>
-                  <span>แนวรับ <strong className="text-green">{formatNumber(levels.support)}</strong></span>
+                  <span>แนวต้าน <strong className="text-red">{money(levels.resistance)}</strong></span>
+                  <span>Pivot <strong>{money(levels.pivot)}</strong></span>
+                  <span>แนวรับ <strong className="text-green">{money(levels.support)}</strong></span>
                 </div>
               )}
             </>

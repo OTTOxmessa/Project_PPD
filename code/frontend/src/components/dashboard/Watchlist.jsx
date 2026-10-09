@@ -1,12 +1,14 @@
 import { useEffect, useRef, useState } from 'react'
 import apiClient from '../../api/client.js'
 import { ensureAsset } from '../../api/assets.js'
-import { apiError, formatNumber, formatPercent } from '../../utils/format.js'
+import { apiError, formatPercent } from '../../utils/format.js'
+import { useCurrency } from '../../context/CurrencyContext.jsx'
 import SymbolSearch from '../SymbolSearch.jsx'
 import '../../source-tag.css'
 
 // คอลัมน์ขวา: Watchlist — % รายวันเป็นสีเขียว (บวก) / แดง (ลบ) ชัดเจน
 function Watchlist({ selectedAssetId, onSelect, refreshKey, onLoaded }) {
+  const { money } = useCurrency()
   const [items, setItems] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
@@ -96,7 +98,7 @@ function Watchlist({ selectedAssetId, onSelect, refreshKey, onLoaded }) {
                   <span className="muted small watchlist-name">{q.name}</span>
                 </div>
                 <div className="watchlist-price">
-                  <span>{formatNumber(q.price)}</span>
+                  <span>{money(q.price)}</span>
                   <span className={`change-pill ${tone}`}>{pct === null ? '-' : formatPercent(pct)}</span>
                 </div>
                 <button className="remove-btn" title="เอาออกจาก Watchlist" onClick={(e) => handleRemove(e, q.assetId)}>

@@ -42,7 +42,7 @@ class PriceAlertServiceImplTest {
 
     private static PriceAlert alertInPortfolio5(AlertStatus status) {
         return PriceAlert.builder().id(1L).portfolio(Portfolio.builder().id(5L).build())
-                .asset(Asset.builder().id(1L).symbol("PTT").build())
+                .asset(Asset.builder().id(1L).symbol("AAPL").build())
                 .condition(AlertCondition.PRICE_BELOW).targetPrice(new BigDecimal("30")).status(status).build();
     }
 
@@ -50,7 +50,7 @@ class PriceAlertServiceImplTest {
     @DisplayName("create: ผูกพอร์ต/สินทรัพย์ และบังคับสถานะเริ่มต้นเป็น PENDING")
     void createForcesPending() {
         Portfolio portfolio = Portfolio.builder().id(5L).build();
-        Asset asset = Asset.builder().id(1L).symbol("PTT").build();
+        Asset asset = Asset.builder().id(1L).symbol("AAPL").build();
         when(portfolioRepository.findById(5L)).thenReturn(Optional.of(portfolio));
         when(assetRepository.findById(1L)).thenReturn(Optional.of(asset));
         when(priceAlertRepository.save(any(PriceAlert.class))).thenAnswer(inv -> inv.getArgument(0));
@@ -87,16 +87,16 @@ class PriceAlertServiceImplTest {
     @DisplayName("update: alert ที่ยัง PENDING → แก้สินทรัพย์/เงื่อนไข/ราคาเป้าหมายได้")
     void updatePending() {
         PriceAlert alert = alertInPortfolio5(AlertStatus.PENDING);
-        Asset aot = Asset.builder().id(2L).symbol("AOT").build();
+        Asset msft = Asset.builder().id(2L).symbol("MSFT").build();
         when(priceAlertRepository.findById(1L)).thenReturn(Optional.of(alert));
-        when(assetRepository.findById(2L)).thenReturn(Optional.of(aot));
+        when(assetRepository.findById(2L)).thenReturn(Optional.of(msft));
         when(priceAlertRepository.save(any(PriceAlert.class))).thenAnswer(inv -> inv.getArgument(0));
         PriceAlert changes = PriceAlert.builder().condition(AlertCondition.PRICE_ABOVE)
                 .targetPrice(new BigDecimal("70")).build();
 
         PriceAlert saved = service.update(5L, 1L, 2L, changes);
 
-        assertThat(saved.getAsset()).isSameAs(aot);
+        assertThat(saved.getAsset()).isSameAs(msft);
         assertThat(saved.getCondition()).isEqualTo(AlertCondition.PRICE_ABOVE);
         assertThat(saved.getTargetPrice()).isEqualByComparingTo("70");
         assertThat(saved.getStatus()).isEqualTo(AlertStatus.PENDING);

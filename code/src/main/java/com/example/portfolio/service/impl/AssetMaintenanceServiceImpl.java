@@ -5,6 +5,7 @@ import com.example.portfolio.exception.ResourceNotFoundException;
 import com.example.portfolio.repository.AssetRepository;
 import com.example.portfolio.repository.PriceHistoryRepository;
 import com.example.portfolio.service.AssetMaintenanceService;
+import com.example.portfolio.service.market.UsMarket;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -27,9 +28,10 @@ public class AssetMaintenanceServiceImpl implements AssetMaintenanceService {
             throw new IllegalStateException("เปลี่ยน symbol จาก " + asset.getSymbol() + " เป็น " + requestedSymbol
                     + " ไม่ได้ เพราะราคาย้อนหลังผูกกับ symbol เดิม — ให้เพิ่มเป็นสินทรัพย์ใหม่แทน");
         }
+        String exchange = UsMarket.requireSupported(asset.getSymbol(), changes.getAssetType(), changes.getExchange());
         asset.setName(changes.getName());
         asset.setAssetType(changes.getAssetType());
-        asset.setExchange(changes.getExchange());
+        asset.setExchange(exchange);
         return assetRepository.save(asset);
     }
 

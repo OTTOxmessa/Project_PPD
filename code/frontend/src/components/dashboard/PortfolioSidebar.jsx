@@ -1,17 +1,18 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import apiClient from '../../api/client.js'
-import { apiError, formatNumber, formatPercent } from '../../utils/format.js'
+import { apiError, formatPercent } from '../../utils/format.js'
+import { useCurrency } from '../../context/CurrencyContext.jsx'
 
 // คอลัมน์ซ้าย: พอร์ตหุ้นทั้งหมด พร้อมมูลค่าและกำไร/ขาดทุน
 function PortfolioSidebar() {
+  const { currency: shownCurrency, money } = useCurrency()
   const navigate = useNavigate()
   const [portfolios, setPortfolios] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
   const [showForm, setShowForm] = useState(false)
   const [name, setName] = useState('')
-  const [baseCurrency, setBaseCurrency] = useState('THB')
   const [creating, setCreating] = useState(false)
 
   const load = async () => {
@@ -35,7 +36,8 @@ function PortfolioSidebar() {
     setCreating(true)
     setError(null)
     try {
-      const res = await apiClient.post('/portfolios', { name, baseCurrency })
+      // ระบบรองรับเฉพาะหุ้นสหรัฐฯ พอร์ตทุกพอร์ตจึงเป็น USD
+      const res = await apiClient.post('/portfolios', { name, baseCurrency: 'USD' })
       navigate(`/portfolios/${res.data.id}`)
     } catch (err) {
       setError(apiError(err, 'สร้างพอร์ตไม่สำเร็จ'))
@@ -43,7 +45,7 @@ function PortfolioSidebar() {
     }
   }
 
-  // รวมมูลค่าแยกตามสกุลเงิน (ไม่รวม THB กับ USD เข้าด้วยกัน)
+  // รวมมูลค่าแยกตามสกุลเงิน (ตอนนี้มีแค่ USD แต่เผื่อพอร์ตสกุลอื่นในอนาคต จะไม่ถูกบวกปนกัน)
   const totalsByCurrency = portfolios.reduce((acc, p) => {
     const t = acc[p.baseCurrency] || { value: 0, gain: 0 }
     t.value += Number(p.marketValue)
@@ -63,10 +65,10 @@ function PortfolioSidebar() {
 
       {Object.entries(totalsByCurrency).map(([currency, t]) => (
         <div key={currency} className="total-row">
-          <span className="muted">มูลค่ารวม ({currency})</span>
-          <strong>{formatNumber(t.value)}</strong>
+          <span className="muted">มูลค่ารวม ({shownCurrency})</span>
+          <strong>{money(t.value)}</strong>
           <span className={t.gain >= 0 ? 'text-green' : 'text-red'}>
-            {t.gain >= 0 ? '+' : ''}{formatNumber(t.gain)}
+            {t.gain >= 0 ? '+' : ''}{money(t.gain)}
           </span>
         </div>
       ))}
@@ -74,10 +76,7 @@ function PortfolioSidebar() {
       {showForm && (
         <form className="mini-form" onSubmit={handleCreate}>
           <input value={name} onChange={(e) => setName(e.target.value)} placeholder="ชื่อพอร์ต" required />
-          <select value={baseCurrency} onChange={(e) => setBaseCurrency(e.target.value)}>
-            <option value="THB">THB</option>
-            <option value="USD">USD</option>
-          </select>
+          <span className="muted small" title="ระบบรองรับเฉพาะหุ้นและ ETF ตลาดสหรัฐฯ">USD</span>
           <button type="submit" className="btn btn-primary btn-sm" disabled={creating}>
             {creating ? '...' : 'สร้าง'}
           </button>
@@ -104,12 +103,12 @@ function PortfolioSidebar() {
                 </div>
                 <div className="portfolio-card-bottom">
                   <div>
-                    <div className="muted small">มูลค่า ({p.baseCurrency})</div>
-                    <div className="portfolio-card-value">{formatNumber(p.marketValue)}</div>
+                    <div className="muted small">มูลค่า ({shownCurrency})</div>
+                    <div className="portfolio-card-value">{money(p.marketValue)}</div>
                   </div>
                   <div className={`portfolio-card-gain ${positive ? 'text-green' : 'text-red'}`}>
                     <div>({formatPercent(p.gainPercent)})</div>
-                    <div>{positive ? '+' : ''}{formatNumber(p.gain)}</div>
+                    <div>{positive ? '+' : ''}{money(p.gain)}</div>
                   </div>
                 </div>
                 <div className="muted small">{p.holdingsCount} สินทรัพย์</div>

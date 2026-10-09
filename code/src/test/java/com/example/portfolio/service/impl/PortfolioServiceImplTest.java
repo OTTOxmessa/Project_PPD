@@ -43,14 +43,14 @@ class PortfolioServiceImplTest {
     }
 
     private static Portfolio portfolio(Long id, User owner) {
-        return Portfolio.builder().id(id).user(owner).name("Long-term").baseCurrency("THB").build();
+        return Portfolio.builder().id(id).user(owner).name("Long-term").baseCurrency("USD").build();
     }
 
     @Test
-    @DisplayName("create: ผูกพอร์ตใหม่เข้ากับผู้ใช้ก่อนบันทึก")
+    @DisplayName("create: ผูกพอร์ตใหม่เข้ากับผู้ใช้ และตั้งสกุลเงินเป็น USD ก่อนบันทึก")
     void createAssignsOwner() {
         User owner = user(1L);
-        Portfolio input = Portfolio.builder().name("Dividend").baseCurrency("THB").build();
+        Portfolio input = Portfolio.builder().name("Dividend").build(); // ไม่ระบุสกุลเงิน → ระบบตั้งเป็น USD เอง
         when(userRepository.findById(1L)).thenReturn(Optional.of(owner));
         when(portfolioRepository.save(any(Portfolio.class))).thenAnswer(inv -> inv.getArgument(0));
 
@@ -58,6 +58,7 @@ class PortfolioServiceImplTest {
 
         assertThat(saved.getUser()).isSameAs(owner);
         assertThat(saved.getName()).isEqualTo("Dividend");
+        assertThat(saved.getBaseCurrency()).isEqualTo("USD");
     }
 
     @Test

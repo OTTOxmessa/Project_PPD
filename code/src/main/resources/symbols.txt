@@ -1,145 +1,588 @@
-# รายชื่อหุ้นอ้างอิงสำหรับช่องค้นหา (Auto-complete)
+# รายชื่อหุ้นอ้างอิงสำหรับช่องค้นหา (Auto-complete) — เฉพาะตลาดสหรัฐฯ (USD)
 # รูปแบบ: SYMBOL|ชื่อบริษัท|ประเภท (AssetType)|ตลาด
 # คั่นด้วย | เพราะชื่อบริษัทหลายตัวมีเครื่องหมายจุลภาค
-# ---------- US Stocks ----------
-AA|Alcoa Corporation|STOCK|US
-AAL|American Airlines Group Inc.|STOCK|US
-AAOI|Applied Optoelectronics, Inc.|STOCK|US
-AAP|Advance Auto Parts, Inc.|STOCK|US
-AAPL|Apple Inc.|STOCK|US
-ABBV|AbbVie Inc.|STOCK|US
-ABNB|Airbnb, Inc.|STOCK|US
+#
+# แหล่งข้อมูล: รายชื่อสมาชิก S&P 500 และ Dow Jones Industrial Average จาก Wikipedia (ตรวจเมื่อ ต.ค. 2026)
+#   https://en.wikipedia.org/wiki/List_of_S%26P_500_companies
+#   https://en.wikipedia.org/wiki/Historical_components_of_the_Dow_Jones_Industrial_Average
+# สมาชิกดัชนีเปลี่ยนได้ทุกไตรมาส — อัปเดตไฟล์นี้เมื่อมีการปรับรายชื่อ
+# หุ้นที่ไม่อยู่ในรายชื่อนี้ยังเพิ่มเองได้ที่หน้า "สินทรัพย์" (ต้องเป็น ticker ของตลาดสหรัฐฯ)
+#
+# Dow Jones 30 (ทุกตัวเป็นสมาชิก S&P 500 ด้วย จึงอยู่ในหมวดด้านล่างแล้ว):
+#   AAPL AMGN AMZN AXP BA CAT CRM CSCO CVX DIS GOOGL GS HD HON IBM JNJ JPM KO MCD MMM MRK MSFT NKE NVDA PG SHW TRV UNH V WMT
+
+# ---------- S&P 500 (503 ตัว) ----------
+MMM|3M|STOCK|US
+AOS|A. O. Smith|STOCK|US
 ABT|Abbott Laboratories|STOCK|US
-ACN|Accenture plc|STOCK|US
+ABBV|AbbVie|STOCK|US
+ACN|Accenture|STOCK|US
 ADBE|Adobe Inc.|STOCK|US
-ADI|Analog Devices, Inc.|STOCK|US
-AMAT|Applied Materials, Inc.|STOCK|US
-AMD|Advanced Micro Devices, Inc.|STOCK|US
-AMGN|Amgen Inc.|STOCK|US
-AMZN|Amazon.com, Inc.|STOCK|US
-ANET|Arista Networks, Inc.|STOCK|US
-ARM|Arm Holdings plc|STOCK|US
-ASML|ASML Holding N.V.|STOCK|US
-AVGO|Broadcom Inc.|STOCK|US
-AXP|American Express Company|STOCK|US
-BA|The Boeing Company|STOCK|US
-BABA|Alibaba Group Holding Limited|STOCK|US
-BAC|Bank of America Corporation|STOCK|US
-C|Citigroup Inc.|STOCK|US
+AMD|Advanced Micro Devices|STOCK|US
+AES|AES Corporation|STOCK|US
+AFL|Aflac|STOCK|US
+A|Agilent Technologies|STOCK|US
+APD|Air Products|STOCK|US
+ABNB|Airbnb|STOCK|US
+AKAM|Akamai Technologies|STOCK|US
+ALB|Albemarle Corporation|STOCK|US
+ARE|Alexandria Real Estate Equities|STOCK|US
+ALGN|Align Technology|STOCK|US
+ALLE|Allegion|STOCK|US
+LNT|Alliant Energy|STOCK|US
+ALL|Allstate|STOCK|US
+GOOGL|Alphabet Inc. (Class A)|STOCK|US
+GOOG|Alphabet Inc. (Class C)|STOCK|US
+MO|Altria|STOCK|US
+AMZN|Amazon|STOCK|US
+AMCR|Amcor|STOCK|US
+AEE|Ameren|STOCK|US
+AEP|American Electric Power|STOCK|US
+AXP|American Express|STOCK|US
+AIG|American International Group|STOCK|US
+AMT|American Tower|STOCK|US
+AWK|American Water Works|STOCK|US
+AMP|Ameriprise Financial|STOCK|US
+AME|Ametek|STOCK|US
+AMGN|Amgen|STOCK|US
+APH|Amphenol|STOCK|US
+ADI|Analog Devices|STOCK|US
+AON|Aon plc|STOCK|US
+APA|APA Corporation|STOCK|US
+APO|Apollo Global Management|STOCK|US
+AAPL|Apple Inc.|STOCK|US
+AMAT|Applied Materials|STOCK|US
+APP|AppLovin|STOCK|US
+APTV|Aptiv|STOCK|US
+ACGL|Arch Capital Group|STOCK|US
+ADM|Archer Daniels Midland|STOCK|US
+ARES|Ares Management|STOCK|US
+ANET|Arista Networks|STOCK|US
+AJG|Arthur J. Gallagher & Co.|STOCK|US
+AIZ|Assurant|STOCK|US
+T|AT&T|STOCK|US
+ATO|Atmos Energy|STOCK|US
+ADSK|Autodesk|STOCK|US
+ADP|Automatic Data Processing|STOCK|US
+AZO|AutoZone|STOCK|US
+AVY|Avery Dennison|STOCK|US
+AXON|Axon Enterprise|STOCK|US
+BKR|Baker Hughes|STOCK|US
+BALL|Ball Corporation|STOCK|US
+BAC|Bank of America|STOCK|US
+BAX|Baxter International|STOCK|US
+BDX|Becton Dickinson|STOCK|US
+BRK.B|Berkshire Hathaway|STOCK|US
+BBY|Best Buy|STOCK|US
+TECH|Bio-Techne|STOCK|US
+BIIB|Biogen|STOCK|US
+BLK|BlackRock|STOCK|US
+BX|Blackstone Inc.|STOCK|US
+XYZ|Block, Inc.|STOCK|US
+BNY|BNY Mellon|STOCK|US
+BA|Boeing|STOCK|US
+BKNG|Booking Holdings|STOCK|US
+BSX|Boston Scientific|STOCK|US
+BMY|Bristol Myers Squibb|STOCK|US
+AVGO|Broadcom|STOCK|US
+BR|Broadridge Financial Solutions|STOCK|US
+BRO|Brown & Brown|STOCK|US
+BF.B|Brown-Forman|STOCK|US
+BLDR|Builders FirstSource|STOCK|US
+BG|Bunge Global|STOCK|US
+BXP|BXP, Inc.|STOCK|US
+CHRW|C.H. Robinson|STOCK|US
+CDNS|Cadence Design Systems|STOCK|US
+CPT|Camden Property Trust|STOCK|US
+COF|Capital One|STOCK|US
+CAH|Cardinal Health|STOCK|US
+CCL|Carnival Corporation|STOCK|US
+CARR|Carrier Global|STOCK|US
+CVNA|Carvana|STOCK|US
+CASY|Casey's|STOCK|US
 CAT|Caterpillar Inc.|STOCK|US
-COIN|Coinbase Global, Inc.|STOCK|US
-COST|Costco Wholesale Corporation|STOCK|US
-CRM|Salesforce, Inc.|STOCK|US
-CRWD|CrowdStrike Holdings, Inc.|STOCK|US
-CSCO|Cisco Systems, Inc.|STOCK|US
+CBOE|Cboe Global Markets|STOCK|US
+CBRE|CBRE Group|STOCK|US
+CDW|CDW Corporation|STOCK|US
+COR|Cencora|STOCK|US
+CNC|Centene Corporation|STOCK|US
+CNP|CenterPoint Energy|STOCK|US
+CF|CF Industries|STOCK|US
+CRL|Charles River Laboratories|STOCK|US
+SCHW|Charles Schwab Corporation|STOCK|US
+CHTR|Charter Communications|STOCK|US
 CVX|Chevron Corporation|STOCK|US
-DDOG|Datadog, Inc.|STOCK|US
-DIS|The Walt Disney Company|STOCK|US
+CMG|Chipotle Mexican Grill|STOCK|US
+CB|Chubb Limited|STOCK|US
+CHD|Church & Dwight|STOCK|US
+CIEN|Ciena|STOCK|US
+CI|Cigna|STOCK|US
+CINF|Cincinnati Financial|STOCK|US
+CTAS|Cintas|STOCK|US
+CSCO|Cisco|STOCK|US
+C|Citigroup|STOCK|US
+CFG|Citizens Financial Group|STOCK|US
+CLX|Clorox|STOCK|US
+CME|CME Group|STOCK|US
+CMS|CMS Energy|STOCK|US
+KO|Coca-Cola Company (The)|STOCK|US
+CTSH|Cognizant|STOCK|US
+COHR|Coherent Corp.|STOCK|US
+COIN|Coinbase|STOCK|US
+CL|Colgate-Palmolive|STOCK|US
+CMCSA|Comcast|STOCK|US
+FIX|Comfort Systems USA|STOCK|US
+COP|ConocoPhillips|STOCK|US
+ED|Consolidated Edison|STOCK|US
+STZ|Constellation Brands|STOCK|US
+CEG|Constellation Energy|STOCK|US
+COO|Cooper Companies (The)|STOCK|US
+CPRT|Copart|STOCK|US
+GLW|Corning Inc.|STOCK|US
+CPAY|Corpay|STOCK|US
+CTVA|Corteva|STOCK|US
+CSGP|CoStar Group|STOCK|US
+COST|Costco|STOCK|US
+CRH|CRH plc|STOCK|US
+CRWD|CrowdStrike|STOCK|US
+CCI|Crown Castle|STOCK|US
+CSX|CSX Corporation|STOCK|US
+CMI|Cummins|STOCK|US
+CVS|CVS Health|STOCK|US
+DHR|Danaher Corporation|STOCK|US
+DRI|Darden Restaurants|STOCK|US
+DDOG|Datadog|STOCK|US
+DVA|DaVita|STOCK|US
+DECK|Deckers Brands|STOCK|US
+DE|Deere & Company|STOCK|US
+DELL|Dell Technologies|STOCK|US
+DAL|Delta Air Lines|STOCK|US
+DVN|Devon Energy|STOCK|US
+DXCM|Dexcom|STOCK|US
+FANG|Diamondback Energy|STOCK|US
+DLR|Digital Realty|STOCK|US
+DG|Dollar General|STOCK|US
+DLTR|Dollar Tree|STOCK|US
+D|Dominion Energy|STOCK|US
+DPZ|Domino's|STOCK|US
+DASH|DoorDash|STOCK|US
+DOV|Dover Corporation|STOCK|US
+DOW|Dow Inc.|STOCK|US
+DHI|D. R. Horton|STOCK|US
+DTE|DTE Energy|STOCK|US
+DUK|Duke Energy|STOCK|US
+DD|DuPont|STOCK|US
+ETN|Eaton Corporation|STOCK|US
+EBAY|eBay Inc.|STOCK|US
+ECHO|EchoStar|STOCK|US
+ECL|Ecolab|STOCK|US
+EIX|Edison International|STOCK|US
+EW|Edwards Lifesciences|STOCK|US
+ELV|Elevance Health|STOCK|US
+EME|Emcor|STOCK|US
+EMR|Emerson Electric|STOCK|US
+ETR|Entergy|STOCK|US
+EOG|EOG Resources|STOCK|US
+EQT|EQT Corporation|STOCK|US
+EFX|Equifax|STOCK|US
+EQIX|Equinix|STOCK|US
+ERIE|Erie Indemnity|STOCK|US
+ESS|Essex Property Trust|STOCK|US
+EL|Estee Lauder Companies (The)|STOCK|US
+EG|Everest Group|STOCK|US
+EVRG|Evergy|STOCK|US
+ES|Eversource Energy|STOCK|US
+EXC|Exelon|STOCK|US
+EXE|Expand Energy|STOCK|US
+EXPE|Expedia Group|STOCK|US
+EXPD|Expeditors International|STOCK|US
+EXR|Extra Space Storage|STOCK|US
+XOM|ExxonMobil|STOCK|US
+FFIV|F5, Inc.|STOCK|US
+FDS|FactSet|STOCK|US
+FICO|Fair Isaac|STOCK|US
+FAST|Fastenal|STOCK|US
+FRT|Federal Realty Investment Trust|STOCK|US
+FDX|FedEx|STOCK|US
+FDXF|FedEx Freight|STOCK|US
+FERG|Ferguson Enterprises|STOCK|US
+FIS|Fidelity National Information Services|STOCK|US
+FITB|Fifth Third Bancorp|STOCK|US
+FSLR|First Solar|STOCK|US
+FE|FirstEnergy|STOCK|US
+FISV|Fiserv|STOCK|US
+FLEX|Flex Ltd.|STOCK|US
 F|Ford Motor Company|STOCK|US
-GM|General Motors Company|STOCK|US
-GOOG|Alphabet Inc. Class C|STOCK|US
-GOOGL|Alphabet Inc. Class A|STOCK|US
-GS|The Goldman Sachs Group, Inc.|STOCK|US
-HD|The Home Depot, Inc.|STOCK|US
-IBM|International Business Machines Corporation|STOCK|US
-INTC|Intel Corporation|STOCK|US
-INTU|Intuit Inc.|STOCK|US
-IONQ|IonQ, Inc.|STOCK|US
+FTNT|Fortinet|STOCK|US
+FTV|Fortive|STOCK|US
+FOXA|Fox Corporation (Class A)|STOCK|US
+FOX|Fox Corporation (Class B)|STOCK|US
+BEN|Franklin Resources|STOCK|US
+FCX|Freeport-McMoRan|STOCK|US
+GRMN|Garmin|STOCK|US
+IT|Gartner|STOCK|US
+GE|GE Aerospace|STOCK|US
+GEHC|GE HealthCare|STOCK|US
+GEV|GE Vernova|STOCK|US
+GEN|Gen Digital|STOCK|US
+GNRC|Generac|STOCK|US
+GD|General Dynamics|STOCK|US
+GIS|General Mills|STOCK|US
+GM|General Motors|STOCK|US
+GPC|Genuine Parts Company|STOCK|US
+GILD|Gilead Sciences|STOCK|US
+GPN|Global Payments|STOCK|US
+GL|Globe Life|STOCK|US
+GDDY|GoDaddy|STOCK|US
+GS|Goldman Sachs|STOCK|US
+HAL|Halliburton|STOCK|US
+HIG|Hartford (The)|STOCK|US
+HAS|Hasbro|STOCK|US
+HCA|HCA Healthcare|STOCK|US
+DOC|Healthpeak Properties|STOCK|US
+HSIC|Henry Schein|STOCK|US
+HSY|Hershey Company (The)|STOCK|US
+HPE|Hewlett Packard Enterprise|STOCK|US
+HLT|Hilton Worldwide|STOCK|US
+HD|Home Depot (The)|STOCK|US
+HONA|Honeywell Aerospace|STOCK|US
+HON|Honeywell Technologies|STOCK|US
+HRL|Hormel Foods|STOCK|US
+HST|Host Hotels & Resorts|STOCK|US
+HWM|Howmet Aerospace|STOCK|US
+HPQ|HP Inc.|STOCK|US
+HUBB|Hubbell Incorporated|STOCK|US
+HUM|Humana|STOCK|US
+HBAN|Huntington Bancshares|STOCK|US
+HII|Huntington Ingalls Industries|STOCK|US
+IBM|IBM|STOCK|US
+IEX|IDEX Corporation|STOCK|US
+IDXX|Idexx Laboratories|STOCK|US
+ITW|Illinois Tool Works|STOCK|US
+INCY|Incyte|STOCK|US
+IR|Ingersoll Rand|STOCK|US
+PODD|Insulet Corporation|STOCK|US
+INTC|Intel|STOCK|US
+IBKR|Interactive Brokers|STOCK|US
+ICE|Intercontinental Exchange|STOCK|US
+IFF|International Flavors & Fragrances|STOCK|US
+IP|International Paper|STOCK|US
+INTU|Intuit|STOCK|US
+ISRG|Intuitive Surgical|STOCK|US
+IVZ|Invesco|STOCK|US
+INVH|Invitation Homes|STOCK|US
+IQV|IQVIA|STOCK|US
+IRM|Iron Mountain|STOCK|US
+JBHT|J.B. Hunt|STOCK|US
+JBL|Jabil|STOCK|US
+JKHY|Jack Henry & Associates|STOCK|US
+J|Jacobs Solutions|STOCK|US
 JNJ|Johnson & Johnson|STOCK|US
-JPM|JPMorgan Chase & Co.|STOCK|US
-KO|The Coca-Cola Company|STOCK|US
-LLY|Eli Lilly and Company|STOCK|US
-LRCX|Lam Research Corporation|STOCK|US
-MA|Mastercard Incorporated|STOCK|US
-MCD|McDonald's Corporation|STOCK|US
-MELI|MercadoLibre, Inc.|STOCK|US
-META|Meta Platforms, Inc.|STOCK|US
-MRK|Merck & Co., Inc.|STOCK|US
-MRVL|Marvell Technology, Inc.|STOCK|US
+JCI|Johnson Controls|STOCK|US
+JPM|JPMorgan Chase|STOCK|US
+KVUE|Kenvue|STOCK|US
+KDP|Keurig Dr Pepper|STOCK|US
+KEY|KeyCorp|STOCK|US
+KEYS|Keysight Technologies|STOCK|US
+KMB|Kimberly-Clark|STOCK|US
+KIM|Kimco Realty|STOCK|US
+KMI|Kinder Morgan|STOCK|US
+KKR|KKR & Co.|STOCK|US
+KLAC|KLA Corporation|STOCK|US
+KHC|Kraft Heinz|STOCK|US
+KR|Kroger|STOCK|US
+LHX|L3Harris|STOCK|US
+LH|Labcorp|STOCK|US
+LRCX|Lam Research|STOCK|US
+LVS|Las Vegas Sands|STOCK|US
+LDOS|Leidos|STOCK|US
+LEN|Lennar|STOCK|US
+LII|Lennox International|STOCK|US
+LLY|Lilly (Eli)|STOCK|US
+LIN|Linde plc|STOCK|US
+LYV|Live Nation Entertainment|STOCK|US
+LMT|Lockheed Martin|STOCK|US
+L|Loews Corporation|STOCK|US
+LOW|Lowe's|STOCK|US
+LULU|Lululemon Athletica|STOCK|US
+LITE|Lumentum|STOCK|US
+LYB|LyondellBasell|STOCK|US
+MTB|M&T Bank|STOCK|US
+MPC|Marathon Petroleum|STOCK|US
+MAR|Marriott International|STOCK|US
+MRSH|Marsh McLennan|STOCK|US
+MLM|Martin Marietta Materials|STOCK|US
+MRVL|Marvell Technology|STOCK|US
+MAS|Masco|STOCK|US
+MA|Mastercard|STOCK|US
+MKC|McCormick & Company|STOCK|US
+MCD|McDonald's|STOCK|US
+MCK|McKesson Corporation|STOCK|US
+MDT|Medtronic|STOCK|US
+MRK|Merck & Co.|STOCK|US
+META|Meta Platforms|STOCK|US
+MET|MetLife|STOCK|US
+MTD|Mettler Toledo|STOCK|US
+MGM|MGM Resorts|STOCK|US
+MCHP|Microchip Technology|STOCK|US
+MU|Micron Technology|STOCK|US
+MSFT|Microsoft|STOCK|US
+MAA|Mid-America Apartment Communities|STOCK|US
+MRNA|Moderna|STOCK|US
+TAP|Molson Coors Beverage Company|STOCK|US
+MDLZ|Mondelez International|STOCK|US
+MPWR|Monolithic Power Systems|STOCK|US
+MNST|Monster Beverage|STOCK|US
+MCO|Moody's Corporation|STOCK|US
 MS|Morgan Stanley|STOCK|US
-MSFT|Microsoft Corporation|STOCK|US
-MU|Micron Technology, Inc.|STOCK|US
-NFLX|Netflix, Inc.|STOCK|US
-NKE|NIKE, Inc.|STOCK|US
-NOW|ServiceNow, Inc.|STOCK|US
-NVDA|NVIDIA Corporation|STOCK|US
-NVO|Novo Nordisk A/S|STOCK|US
+MOS|Mosaic Company (The)|STOCK|US
+MSI|Motorola Solutions|STOCK|US
+MSCI|MSCI|STOCK|US
+NDAQ|Nasdaq, Inc.|STOCK|US
+NTAP|NetApp|STOCK|US
+NFLX|Netflix|STOCK|US
+NEM|Newmont|STOCK|US
+NWSA|News Corp (Class A)|STOCK|US
+NWS|News Corp (Class B)|STOCK|US
+NEE|NextEra Energy|STOCK|US
+NKE|Nike, Inc.|STOCK|US
+NI|NiSource|STOCK|US
+NDSN|Nordson Corporation|STOCK|US
+NSC|Norfolk Southern|STOCK|US
+NTRS|Northern Trust|STOCK|US
+NOC|Northrop Grumman|STOCK|US
+NCLH|Norwegian Cruise Line Holdings|STOCK|US
+NRG|NRG Energy|STOCK|US
+NUE|Nucor|STOCK|US
+NVDA|Nvidia|STOCK|US
+NVR|NVR, Inc.|STOCK|US
+NXPI|NXP Semiconductors|STOCK|US
+ORLY|O'Reilly Automotive|STOCK|US
+OXY|Occidental Petroleum|STOCK|US
+ODFL|Old Dominion|STOCK|US
+OMC|Omnicom Group|STOCK|US
+ON|ON Semiconductor|STOCK|US
+OKE|Oneok|STOCK|US
 ORCL|Oracle Corporation|STOCK|US
-PANW|Palo Alto Networks, Inc.|STOCK|US
-PEP|PepsiCo, Inc.|STOCK|US
-PFE|Pfizer Inc.|STOCK|US
-PG|The Procter & Gamble Company|STOCK|US
-PLTR|Palantir Technologies Inc.|STOCK|US
-PYPL|PayPal Holdings, Inc.|STOCK|US
-QBTS|D-Wave Quantum Inc.|STOCK|US
-QCOM|QUALCOMM Incorporated|STOCK|US
-RGTI|Rigetti Computing, Inc.|STOCK|US
-RIVN|Rivian Automotive, Inc.|STOCK|US
-SBUX|Starbucks Corporation|STOCK|US
-SHOP|Shopify Inc.|STOCK|US
-SMCI|Super Micro Computer, Inc.|STOCK|US
-SNOW|Snowflake Inc.|STOCK|US
-SOFI|SoFi Technologies, Inc.|STOCK|US
-SPOT|Spotify Technology S.A.|STOCK|US
-T|AT&T Inc.|STOCK|US
+OTIS|Otis Worldwide|STOCK|US
+PCAR|Paccar|STOCK|US
+PKG|Packaging Corporation of America|STOCK|US
+PLTR|Palantir Technologies|STOCK|US
+PANW|Palo Alto Networks|STOCK|US
+PSKY|Paramount Skydance Corporation|STOCK|US
+PH|Parker Hannifin|STOCK|US
+PAYX|Paychex|STOCK|US
+PYPL|PayPal|STOCK|US
+PNR|Pentair|STOCK|US
+PEP|PepsiCo|STOCK|US
+PFE|Pfizer|STOCK|US
+PCG|PG&E Corporation|STOCK|US
+PM|Philip Morris International|STOCK|US
+PSX|Phillips 66|STOCK|US
+PNW|Pinnacle West Capital|STOCK|US
+PNC|PNC Financial Services|STOCK|US
+PPG|PPG Industries|STOCK|US
+PPL|PPL Corporation|STOCK|US
+PFG|Principal Financial Group|STOCK|US
+PG|Procter & Gamble|STOCK|US
+PGR|Progressive Corporation|STOCK|US
+PLD|Prologis|STOCK|US
+PRU|Prudential Financial|STOCK|US
+PEG|Public Service Enterprise Group|STOCK|US
+PTC|PTC Inc.|STOCK|US
+PSA|Public Storage|STOCK|US
+PHM|PulteGroup|STOCK|US
+PWR|Quanta Services|STOCK|US
+QCOM|Qualcomm|STOCK|US
+DGX|Quest Diagnostics|STOCK|US
+Q|Qnity Electronics|STOCK|US
+RL|Ralph Lauren Corporation|STOCK|US
+RJF|Raymond James Financial|STOCK|US
+RDDT|Reddit|STOCK|US
+RTX|RTX Corporation|STOCK|US
+O|Realty Income|STOCK|US
+REG|Regency Centers|STOCK|US
+REGN|Regeneron Pharmaceuticals|STOCK|US
+RF|Regions Financial Corporation|STOCK|US
+RSG|Republic Services|STOCK|US
+RMD|ResMed|STOCK|US
+RVTY|Revvity|STOCK|US
+HOOD|Robinhood Markets|STOCK|US
+ROK|Rockwell Automation|STOCK|US
+ROL|Rollins, Inc.|STOCK|US
+ROP|Roper Technologies|STOCK|US
+ROST|Ross Stores|STOCK|US
+RCL|Royal Caribbean Group|STOCK|US
+SPGI|S&P Global|STOCK|US
+CRM|Salesforce|STOCK|US
+SNDK|Sandisk|STOCK|US
+SBAC|SBA Communications|STOCK|US
+SLB|Schlumberger|STOCK|US
+STX|Seagate Technology|STOCK|US
+SRE|Sempra|STOCK|US
+NOW|ServiceNow|STOCK|US
+SHW|Sherwin-Williams|STOCK|US
+SPG|Simon Property Group|STOCK|US
+SWKS|Skyworks Solutions|STOCK|US
+SJM|J.M. Smucker Company (The)|STOCK|US
+SW|Smurfit Westrock|STOCK|US
+SNA|Snap-on|STOCK|US
+SOLV|Solventum|STOCK|US
+SO|Southern Company|STOCK|US
+LUV|Southwest Airlines|STOCK|US
+SWK|Stanley Black & Decker|STOCK|US
+SBUX|Starbucks|STOCK|US
+STT|State Street Corporation|STOCK|US
+STLD|Steel Dynamics|STOCK|US
+STE|Steris|STOCK|US
+SYK|Stryker Corporation|STOCK|US
+SMCI|Supermicro|STOCK|US
+SYF|Synchrony Financial|STOCK|US
+SNPS|Synopsys|STOCK|US
+SYY|Sysco|STOCK|US
+TMUS|T-Mobile US|STOCK|US
+TROW|T. Rowe Price|STOCK|US
+TTWO|Take-Two Interactive|STOCK|US
+TPR|Tapestry, Inc.|STOCK|US
+TRGP|Targa Resources|STOCK|US
 TGT|Target Corporation|STOCK|US
+TEL|TE Connectivity|STOCK|US
+TDY|Teledyne Technologies|STOCK|US
+TER|Teradyne|STOCK|US
 TSLA|Tesla, Inc.|STOCK|US
-TSM|Taiwan Semiconductor Manufacturing Company Limited|STOCK|US
-TXN|Texas Instruments Incorporated|STOCK|US
-UBER|Uber Technologies, Inc.|STOCK|US
-UNH|UnitedHealth Group Incorporated|STOCK|US
+TXN|Texas Instruments|STOCK|US
+TPL|Texas Pacific Land Corporation|STOCK|US
+TXT|Textron|STOCK|US
+TMO|Thermo Fisher Scientific|STOCK|US
+TJX|TJX Companies|STOCK|US
+TKO|TKO Group Holdings|STOCK|US
+TTD|Trade Desk (The)|STOCK|US
+TSCO|Tractor Supply|STOCK|US
+TT|Trane Technologies|STOCK|US
+TDG|TransDigm Group|STOCK|US
+TRV|Travelers Companies (The)|STOCK|US
+TRMB|Trimble Inc.|STOCK|US
+TFC|Truist Financial|STOCK|US
+TYL|Tyler Technologies|STOCK|US
+TSN|Tyson Foods|STOCK|US
+USB|U.S. Bancorp|STOCK|US
+UBER|Uber|STOCK|US
+UDR|UDR, Inc.|STOCK|US
+ULTA|Ulta Beauty|STOCK|US
+UNP|Union Pacific Corporation|STOCK|US
+UAL|United Airlines Holdings|STOCK|US
+UPS|United Parcel Service|STOCK|US
+URI|United Rentals|STOCK|US
+UNH|UnitedHealth Group|STOCK|US
+UHS|Universal Health Services|STOCK|US
+VLO|Valero Energy|STOCK|US
+VEEV|Veeva Systems|STOCK|US
+VTR|Ventas|STOCK|US
+VLTO|Veralto|STOCK|US
+VRSN|Verisign|STOCK|US
+VRSK|Verisk Analytics|STOCK|US
+VZ|Verizon|STOCK|US
+VRTX|Vertex Pharmaceuticals|STOCK|US
+VRT|Vertiv|STOCK|US
+VTRS|Viatris|STOCK|US
+VICI|Vici Properties|STOCK|US
 V|Visa Inc.|STOCK|US
-VZ|Verizon Communications Inc.|STOCK|US
-WMT|Walmart Inc.|STOCK|US
-XOM|Exxon Mobil Corporation|STOCK|US
-# ---------- US ETFs ----------
-ARKK|ARK Innovation ETF|ETF|US
-GLD|SPDR Gold Shares|ETF|US
+VST|Vistra Corp.|STOCK|US
+VMRK|Vivmark Residential|STOCK|US
+VMC|Vulcan Materials Company|STOCK|US
+WRB|W. R. Berkley Corporation|STOCK|US
+GWW|W. W. Grainger|STOCK|US
+WAB|Wabtec|STOCK|US
+WMT|Walmart|STOCK|US
+DIS|Walt Disney Company (The)|STOCK|US
+WBD|Warner Bros. Discovery|STOCK|US
+WM|Waste Management|STOCK|US
+WAT|Waters Corporation|STOCK|US
+WEC|WEC Energy Group|STOCK|US
+WFC|Wells Fargo|STOCK|US
+WELL|Welltower|STOCK|US
+WST|West Pharmaceutical Services|STOCK|US
+WDC|Western Digital|STOCK|US
+WY|Weyerhaeuser|STOCK|US
+WSM|Williams-Sonoma, Inc.|STOCK|US
+WMB|Williams Companies|STOCK|US
+WTW|Willis Towers Watson|STOCK|US
+WDAY|Workday, Inc.|STOCK|US
+WYNN|Wynn Resorts|STOCK|US
+XEL|Xcel Energy|STOCK|US
+XYL|Xylem Inc.|STOCK|US
+YUM|Yum! Brands|STOCK|US
+ZBRA|Zebra Technologies|STOCK|US
+ZBH|Zimmer Biomet|STOCK|US
+ZTS|Zoetis|STOCK|US
+
+# ---------- ETF ตลาดสหรัฐฯ (69 ตัว): ดัชนีหลัก, สไตล์, ปันผล, รายกลุ่มอุตสาหกรรม, ต่างประเทศ, พันธบัตร, ทองคำ ----------
+SPY|SPDR S&P 500 ETF Trust|ETF|US
+VOO|Vanguard S&P 500 ETF|ETF|US
+IVV|iShares Core S&P 500 ETF|ETF|US
+SPLG|SPDR Portfolio S&P 500 ETF|ETF|US
+RSP|Invesco S&P 500 Equal Weight ETF|ETF|US
+DIA|SPDR Dow Jones Industrial Average ETF Trust|ETF|US
 QQQ|Invesco QQQ Trust|ETF|US
+QQQM|Invesco NASDAQ 100 ETF|ETF|US
+VTI|Vanguard Total Stock Market ETF|ETF|US
+ITOT|iShares Core S&P Total U.S. Stock Market ETF|ETF|US
+SCHB|Schwab U.S. Broad Market ETF|ETF|US
+SCHX|Schwab U.S. Large-Cap ETF|ETF|US
+IWM|iShares Russell 2000 ETF|ETF|US
+IJH|iShares Core S&P Mid-Cap ETF|ETF|US
+IJR|iShares Core S&P Small-Cap ETF|ETF|US
+MDY|SPDR S&P MidCap 400 ETF Trust|ETF|US
+VUG|Vanguard Growth ETF|ETF|US
+VTV|Vanguard Value ETF|ETF|US
+IWF|iShares Russell 1000 Growth ETF|ETF|US
+IWD|iShares Russell 1000 Value ETF|ETF|US
 SCHD|Schwab U.S. Dividend Equity ETF|ETF|US
+VIG|Vanguard Dividend Appreciation ETF|ETF|US
+VYM|Vanguard High Dividend Yield ETF|ETF|US
+DVY|iShares Select Dividend ETF|ETF|US
+NOBL|ProShares S&P 500 Dividend Aristocrats ETF|ETF|US
+JEPI|JPMorgan Equity Premium Income ETF|ETF|US
+JEPQ|JPMorgan Nasdaq Equity Premium Income ETF|ETF|US
+USMV|iShares MSCI USA Min Vol Factor ETF|ETF|US
+MTUM|iShares MSCI USA Momentum Factor ETF|ETF|US
+QUAL|iShares MSCI USA Quality Factor ETF|ETF|US
+XLK|Technology Select Sector SPDR Fund|ETF|US
+XLF|Financial Select Sector SPDR Fund|ETF|US
+XLV|Health Care Select Sector SPDR Fund|ETF|US
+XLE|Energy Select Sector SPDR Fund|ETF|US
+XLY|Consumer Discretionary Select Sector SPDR Fund|ETF|US
+XLP|Consumer Staples Select Sector SPDR Fund|ETF|US
+XLI|Industrial Select Sector SPDR Fund|ETF|US
+XLB|Materials Select Sector SPDR Fund|ETF|US
+XLU|Utilities Select Sector SPDR Fund|ETF|US
+XLRE|Real Estate Select Sector SPDR Fund|ETF|US
+XLC|Communication Services Select Sector SPDR Fund|ETF|US
+VGT|Vanguard Information Technology ETF|ETF|US
+VNQ|Vanguard Real Estate ETF|ETF|US
 SMH|VanEck Semiconductor ETF|ETF|US
 SOXX|iShares Semiconductor ETF|ETF|US
-SPY|SPDR S&P 500 ETF Trust|ETF|US
+ARKK|ARK Innovation ETF|ETF|US
+VEA|Vanguard FTSE Developed Markets ETF|ETF|US
+VWO|Vanguard FTSE Emerging Markets ETF|ETF|US
+VXUS|Vanguard Total International Stock ETF|ETF|US
+VT|Vanguard Total World Stock ETF|ETF|US
+EFA|iShares MSCI EAFE ETF|ETF|US
+EEM|iShares MSCI Emerging Markets ETF|ETF|US
+IEMG|iShares Core MSCI Emerging Markets ETF|ETF|US
+AGG|iShares Core U.S. Aggregate Bond ETF|ETF|US
+BND|Vanguard Total Bond Market ETF|ETF|US
 TLT|iShares 20+ Year Treasury Bond ETF|ETF|US
-VOO|Vanguard S&P 500 ETF|ETF|US
-VTI|Vanguard Total Stock Market ETF|ETF|US
-# ---------- Thai Stocks (SET) ----------
-ADVANC|Advanced Info Service PCL|STOCK|SET
-AOT|Airports of Thailand PCL|STOCK|SET
-BANPU|Banpu PCL|STOCK|SET
-BBL|Bangkok Bank PCL|STOCK|SET
-BDMS|Bangkok Dusit Medical Services PCL|STOCK|SET
-BEM|Bangkok Expressway and Metro PCL|STOCK|SET
-BH|Bumrungrad Hospital PCL|STOCK|SET
-BTS|BTS Group Holdings PCL|STOCK|SET
-CBG|Carabao Group PCL|STOCK|SET
-CPALL|CP ALL PCL|STOCK|SET
-CPF|Charoen Pokphand Foods PCL|STOCK|SET
-CPN|Central Pattana PCL|STOCK|SET
-CRC|Central Retail Corporation PCL|STOCK|SET
-DELTA|Delta Electronics (Thailand) PCL|STOCK|SET
-EA|Energy Absolute PCL|STOCK|SET
-GPSC|Global Power Synergy PCL|STOCK|SET
-HMPRO|Home Product Center PCL|STOCK|SET
-IVL|Indorama Ventures PCL|STOCK|SET
-KBANK|Kasikornbank PCL|STOCK|SET
-KTB|Krung Thai Bank PCL|STOCK|SET
-KTC|Krungthai Card PCL|STOCK|SET
-LH|Land and Houses PCL|STOCK|SET
-MINT|Minor International PCL|STOCK|SET
-OR|PTT Oil and Retail Business PCL|STOCK|SET
-OSP|Osotspa PCL|STOCK|SET
-PTT|PTT PCL|STOCK|SET
-PTTEP|PTT Exploration and Production PCL|STOCK|SET
-PTTGC|PTT Global Chemical PCL|STOCK|SET
-SCB|SCB X PCL|STOCK|SET
-SCC|The Siam Cement PCL|STOCK|SET
-TISCO|TISCO Financial Group PCL|STOCK|SET
-TOP|Thai Oil PCL|STOCK|SET
-TRUE|True Corporation PCL|STOCK|SET
-TTB|TMBThanachart Bank PCL|STOCK|SET
-TU|Thai Union Group PCL|STOCK|SET
-# ---------- Crypto ----------
-ETH|Ethereum (THB)|CRYPTO|CRYPTO
-SOL|Solana (THB)|CRYPTO|CRYPTO
-XRP|XRP (THB)|CRYPTO|CRYPTO
+IEF|iShares 7-10 Year Treasury Bond ETF|ETF|US
+SHY|iShares 1-3 Year Treasury Bond ETF|ETF|US
+GOVT|iShares U.S. Treasury Bond ETF|ETF|US
+BIL|SPDR Bloomberg 1-3 Month T-Bill ETF|ETF|US
+SGOV|iShares 0-3 Month Treasury Bond ETF|ETF|US
+TIP|iShares TIPS Bond ETF|ETF|US
+LQD|iShares iBoxx Investment Grade Corporate Bond ETF|ETF|US
+HYG|iShares iBoxx High Yield Corporate Bond ETF|ETF|US
+MUB|iShares National Muni Bond ETF|ETF|US
+GLD|SPDR Gold Shares|ETF|US
+IAU|iShares Gold Trust|ETF|US
+SLV|iShares Silver Trust|ETF|US
+DBC|Invesco DB Commodity Index Tracking Fund|ETF|US
