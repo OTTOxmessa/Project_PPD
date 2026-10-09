@@ -23,7 +23,9 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.math.BigDecimal;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -173,6 +175,59 @@ class AllocationServiceImplTest {
 
         assertThatThrownBy(() -> allocationService.upsertTarget(9L, 99L, BigDecimal.TEN))
                 .isInstanceOf(ResourceNotFoundException.class);
+        verify(allocationTargetRepository, never()).save(any());
+    }
+
+    private static AllocationTarget target(Asset asset, String percent) {
+        return AllocationTarget.builder().asset(asset).targetPercent(new BigDecimal(percent)).build();
+    }
+
+    @Test
+    @DisplayName("upsertTargets: เป้าเดิม 60 + 40 แล้วแก้ทั้งสองตัวพร้อมกันเป็น 40 + 60 → รวม 100 บันทึกได้")
+    void upsertTargetsMovesWeightBetweenAssets() {
+        Asset aapl = asset(1, "AAPL");
+        Asset msft = asset(2, "MSFT");
+        AllocationTarget a = target(aapl, "60");
+        AllocationTarget m = target(msft, "40");
+        when(allocationTargetRepository.findByPortfolioId(9L)).thenReturn(List.of(a, m));
+        when(allocationTargetRepository.findByPortfolioIdAndAssetId(9L, 1L)).thenReturn(Optional.of(a));
+        when(allocationTargetRepository.findByPortfolioIdAndAssetId(9L, 2L)).thenReturn(Optional.of(m));
+        when(allocationTargetRepository.save(any(AllocationTarget.class))).thenAnswer(inv -> inv.getArgument(0));
+        Map<Long, BigDecimal> changes = new LinkedHashMap<>();
+        changes.put(1L, new BigDecimal("40"));
+        changes.put(2L, new BigDecimal("60"));
+
+        List<AllocationTarget> saved = allocationService.upsertTargets(9L, changes);
+
+        assertThat(saved).hasSize(2);
+        assertThat(a.getTargetPercent()).isEqualByComparingTo("40");
+        assertThat(m.getTargetPercent()).isEqualByComparingTo("60");
+    }
+
+    @Test
+    @DisplayName("upsertTargets: ทีละตัวไม่เกิน 100 แต่รวมกัน 80 + 60 + 99 = 239% → IllegalArgumentException (400) และไม่บันทึกเลย")
+    void upsertTargetsRejectsTotalOver100() {
+        when(allocationTargetRepository.findByPortfolioId(9L)).thenReturn(List.of());
+        Map<Long, BigDecimal> changes = new LinkedHashMap<>();
+        changes.put(1L, new BigDecimal("80"));
+        changes.put(2L, new BigDecimal("60"));
+        changes.put(3L, new BigDecimal("99"));
+
+        assertThatThrownBy(() -> allocationService.upsertTargets(9L, changes))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("239");
+        verify(allocationTargetRepository, never()).save(any());
+    }
+
+    @Test
+    @DisplayName("upsertTarget ทีละตัว: เป้าตัวอื่นรวม 90% แล้วตั้งตัวใหม่ 20% → รวม 110% ถูกปฏิเสธ (นับตัวที่ขายหมดแล้วด้วย)")
+    void upsertSingleCountsOtherTargets() {
+        when(allocationTargetRepository.findByPortfolioId(9L)).thenReturn(List.of(
+                target(asset(1, "AAPL"), "70"), target(asset(2, "OLD"), "20")));
+
+        assertThatThrownBy(() -> allocationService.upsertTarget(9L, 3L, new BigDecimal("20")))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("110");
         verify(allocationTargetRepository, never()).save(any());
     }
 }
