@@ -1,9 +1,11 @@
 import { useEffect, useState } from 'react'
 import { CartesianGrid, Line, LineChart, ReferenceLine, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
 import apiClient from '../../api/client.js'
-import { apiError, daysAgo, formatNumber, today } from '../../utils/format.js'
+import { apiError, daysAgo, today } from '../../utils/format.js'
+import { useCurrency } from '../../context/CurrencyContext.jsx'
 
 function SupportResistanceTab({ assets }) {
+  const { money } = useCurrency()
   const [assetId, setAssetId] = useState(assets[0]?.id ?? '')
   const [method, setMethod] = useState('pivot')
   const [from, setFrom] = useState(daysAgo(60))
@@ -76,15 +78,15 @@ function SupportResistanceTab({ assets }) {
           <div className="summary-grid">
             <div className="stat">
               <span className="stat-label">แนวต้าน</span>
-              <span className="stat-value text-red">{formatNumber(levels.resistance)}</span>
+              <span className="stat-value text-red">{money(levels.resistance)}</span>
             </div>
             <div className="stat">
               <span className="stat-label">{method === 'pivot' ? 'Pivot' : 'ค่าเฉลี่ย (MA)'}</span>
-              <span className="stat-value">{formatNumber(levels.pivot)}</span>
+              <span className="stat-value">{money(levels.pivot)}</span>
             </div>
             <div className="stat">
               <span className="stat-label">แนวรับ</span>
-              <span className="stat-value text-green">{formatNumber(levels.support)}</span>
+              <span className="stat-value text-green">{money(levels.support)}</span>
             </div>
           </div>
 
@@ -92,8 +94,8 @@ function SupportResistanceTab({ assets }) {
             <LineChart data={prices}>
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis dataKey="date" minTickGap={30} />
-              <YAxis domain={['auto', 'auto']} tickFormatter={(v) => formatNumber(v, 0)} />
-              <Tooltip formatter={(v) => formatNumber(v)} />
+              <YAxis domain={['auto', 'auto']} tickFormatter={(v) => money(v, 0)} />
+              <Tooltip formatter={(v) => money(v)} />
               <Line type="monotone" dataKey="close" name="ราคาปิด" stroke="#2563eb" dot={false} />
               <ReferenceLine y={Number(levels.resistance)} stroke="#dc2626" strokeDasharray="6 4"
                 label={{ value: 'แนวต้าน', position: 'insideTopRight', fill: '#dc2626' }} />

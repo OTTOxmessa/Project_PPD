@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from 'react'
 import apiClient from '../../api/client.js'
 import { ensureAsset } from '../../api/assets.js'
 import { apiError, formatDateTime, formatNumber, formatPercent, today } from '../../utils/format.js'
+import { useCurrency } from '../../context/CurrencyContext.jsx'
 import SymbolSearch from '../SymbolSearch.jsx'
 import '../../source-tag.css'
 
@@ -9,6 +10,7 @@ const EMPTY_FORM = { type: 'BUY', quantity: '', price: '', executedAt: '' }
 
 // ค้นหาหุ้นแล้วซื้อได้เลย — หุ้นที่ยังไม่อยู่ในระบบจะถูกเพิ่มให้อัตโนมัติ (ไม่ต้องไปหน้าสินทรัพย์ก่อน)
 function HoldingsTab({ portfolioId, onAssetsChanged }) {
+  const { currency, money } = useCurrency()
   const [holdings, setHoldings] = useState([])
   const [transactions, setTransactions] = useState([])
   const [loading, setLoading] = useState(true)
@@ -138,7 +140,7 @@ function HoldingsTab({ portfolioId, onAssetsChanged }) {
       ) : (
         <>
           <div className="card table-wrap">
-            <h2>สินทรัพย์ที่ถืออยู่ <span className="muted small">(USD)</span></h2>
+            <h2>สินทรัพย์ที่ถืออยู่ <span className="muted small">({currency})</span></h2>
             {holdings.length === 0 ? (
               <p className="empty-state">ยังไม่มีสินทรัพย์ในพอร์ต — ค้นหาหุ้นด้านบนเพื่อซื้อได้เลย</p>
             ) : (
@@ -166,11 +168,11 @@ function HoldingsTab({ portfolioId, onAssetsChanged }) {
                           <div className="muted small">{h.name}</div>
                         </td>
                         <td className="num">{formatNumber(h.quantity, 4)}</td>
-                        <td className="num">{formatNumber(h.avgCost)}</td>
-                        <td className="num">{formatNumber(h.latestPrice)}</td>
-                        <td className="num">{formatNumber(h.marketValue)}</td>
+                        <td className="num">{money(h.avgCost)}</td>
+                        <td className="num">{money(h.latestPrice)}</td>
+                        <td className="num">{money(h.marketValue)}</td>
                         <td className={`num ${up ? 'text-green' : 'text-red'}`}>
-                          {up ? '+' : ''}{formatNumber(h.gain)}
+                          {up ? '+' : ''}{money(h.gain)}
                           <div className="small">{formatPercent(h.gainPercent)}</div>
                         </td>
                       </tr>
@@ -180,9 +182,9 @@ function HoldingsTab({ portfolioId, onAssetsChanged }) {
                 <tfoot>
                   <tr>
                     <td colSpan={4}><strong>รวม</strong></td>
-                    <td className="num"><strong>{formatNumber(totals.market)}</strong></td>
+                    <td className="num"><strong>{money(totals.market)}</strong></td>
                     <td className={`num ${totalGain >= 0 ? 'text-green' : 'text-red'}`}>
-                      <strong>{totalGain >= 0 ? '+' : ''}{formatNumber(totalGain)}</strong>
+                      <strong>{totalGain >= 0 ? '+' : ''}{money(totalGain)}</strong>
                     </td>
                   </tr>
                 </tfoot>
@@ -212,7 +214,7 @@ function HoldingsTab({ portfolioId, onAssetsChanged }) {
                       <td>{t.symbol}</td>
                       <td><span className={`badge ${t.type === 'BUY' ? 'badge-green' : 'badge-red'}`}>{t.type}</span></td>
                       <td className="num">{formatNumber(t.quantity, 4)}</td>
-                      <td className="num">{formatNumber(t.price)}</td>
+                      <td className="num">{money(t.price)}</td>
                     </tr>
                   ))}
                 </tbody>

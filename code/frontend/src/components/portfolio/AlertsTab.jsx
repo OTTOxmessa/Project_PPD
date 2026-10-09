@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react'
 import apiClient from '../../api/client.js'
-import { apiError, formatDateTime, formatNumber } from '../../utils/format.js'
+import { apiError, formatDateTime } from '../../utils/format.js'
+import { useCurrency } from '../../context/CurrencyContext.jsx'
 
 const CONDITION_LABEL = {
   PRICE_ABOVE: 'ราคาสูงกว่าหรือเท่ากับ',
@@ -16,6 +17,7 @@ const STATUS_BADGE = {
 }
 
 function AlertsTab({ portfolioId, assets }) {
+  const { currency, money } = useCurrency()
   const [alerts, setAlerts] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
@@ -119,7 +121,7 @@ function AlertsTab({ portfolioId, assets }) {
               <tr>
                 <th>Symbol</th>
                 <th>เงื่อนไข</th>
-                <th className="num">ราคาเป้าหมาย (USD)</th>
+                <th className="num">ราคาเป้าหมาย ({currency})</th>
                 <th>สถานะ</th>
                 <th>สร้างเมื่อ</th>
                 <th />
@@ -130,7 +132,7 @@ function AlertsTab({ portfolioId, assets }) {
                 <tr key={a.id}>
                   <td><strong>{a.symbol}</strong></td>
                   <td>{CONDITION_LABEL[a.condition] || a.condition}</td>
-                  <td className="num">{formatNumber(a.targetPrice)}</td>
+                  <td className="num">{money(a.targetPrice)}</td>
                   <td><span className={`badge ${STATUS_BADGE[a.status] || ''}`}>{a.status}</span></td>
                   <td>{formatDateTime(a.createdAt)}</td>
                   <td><button className="btn-text-danger" onClick={() => handleDelete(a.id)}>ลบ</button></td>

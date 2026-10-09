@@ -1,6 +1,7 @@
 import { BrowserRouter, Navigate, NavLink, Route, Routes, useLocation } from 'react-router-dom'
 import { useAuth } from './context/AuthContext.jsx'
 import ProtectedRoute from './components/ProtectedRoute.jsx'
+import CurrencyToggle from './components/CurrencyToggle.jsx'
 import LoginPage from './pages/LoginPage.jsx'
 import RegisterPage from './pages/RegisterPage.jsx'
 import DashboardPage from './pages/DashboardPage.jsx'
@@ -18,6 +19,7 @@ function AppNav() {
       <NavLink to="/" end>กระดานเทรด</NavLink>
       <NavLink to="/assets">สินทรัพย์</NavLink>
       <span className="navbar-spacer" />
+      <CurrencyToggle />
       <span className="navbar-user">{user?.username}</span>
       <button className="btn-link" onClick={logout}>ออกจากระบบ</button>
     </nav>

@@ -4,6 +4,7 @@ import {
 } from 'recharts'
 import apiClient from '../../api/client.js'
 import { apiError, formatNumber, formatPercent } from '../../utils/format.js'
+import { useCurrency } from '../../context/CurrencyContext.jsx'
 
 const COLORS = ['#3b82f6', '#f59e0b', '#10b981', '#ef4444', '#8b5cf6', '#06b6d4', '#ec4899', '#84cc16', '#f97316', '#6366f1']
 
@@ -16,6 +17,7 @@ const METHODS = [
 const TOOLTIP_STYLE = { backgroundColor: '#1b2030', border: '1px solid #2a2e39', borderRadius: 6 }
 
 function AllocationTab({ portfolioId }) {
+  const { currency, money } = useCurrency()
   const [holdings, setHoldings] = useState([])
   const [targets, setTargets] = useState({})
   const [comparison, setComparison] = useState([])
@@ -127,12 +129,12 @@ function AllocationTab({ portfolioId }) {
                 ))}
               </Pie>
               <Tooltip contentStyle={TOOLTIP_STYLE}
-                formatter={(v, name) => [`${formatNumber(v)} (${formatNumber((v / total) * 100)}%)`, name]} />
+                formatter={(v, name) => [`${money(v)} ${currency} (${formatNumber((v / total) * 100)}%)`, name]} />
             </PieChart>
           </ResponsiveContainer>
           <div className="donut-center">
-            <span className="muted small">มูลค่ารวม</span>
-            <strong>{formatNumber(total)}</strong>
+            <span className="muted small">มูลค่ารวม ({currency})</span>
+            <strong>{money(total)}</strong>
           </div>
         </div>
 
@@ -163,7 +165,7 @@ function AllocationTab({ portfolioId }) {
                       <strong>{r.symbol}</strong>
                       <div className="muted small">{r.name}</div>
                     </td>
-                    <td className="num">{formatNumber(r.value)}</td>
+                    <td className="num">{money(r.value)}</td>
                     <td className="num">{formatNumber(r.percent)}%</td>
                     <td className="num">
                       {editing ? (

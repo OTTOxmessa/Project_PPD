@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react'
 import apiClient from '../../api/client.js'
-import { apiError, formatDateTime, formatNumber } from '../../utils/format.js'
+import { apiError, formatDateTime } from '../../utils/format.js'
+import { useCurrency } from '../../context/CurrencyContext.jsx'
 
 // แสดงจำนวนหน่วยตามความละเอียดจริงจาก backend (สูงสุด 6 ตำแหน่ง) — หุ้นเป็นจำนวนเต็ม คริปโตมีทศนิยม
 // ถ้าปัดเหลือ 4 ตำแหน่ง จำนวน x ราคา จะไม่เท่ากับมูลค่าที่แสดง (เช่น BTC 0.0063 x 5.18 ล้าน ≠ 32,614.62)
@@ -14,6 +15,7 @@ const METHOD_INFO = {
 }
 
 function RebalanceTab({ portfolioId }) {
+  const { currency, money } = useCurrency()
   const [method, setMethod] = useState('threshold')
   const [orders, setOrders] = useState([])
   const [loading, setLoading] = useState(true)
@@ -101,8 +103,8 @@ function RebalanceTab({ portfolioId }) {
                   <th>Symbol</th>
                   <th>คำสั่ง</th>
                   <th className="num">จำนวน</th>
-                  <th className="num">ราคาประมาณ (USD)</th>
-                  <th className="num">มูลค่า (USD)</th>
+                  <th className="num">ราคาประมาณ ({currency})</th>
+                  <th className="num">มูลค่า ({currency})</th>
                 </tr>
               </thead>
               <tbody>
@@ -111,18 +113,18 @@ function RebalanceTab({ portfolioId }) {
                     <td><strong>{o.symbol}</strong></td>
                     <td><span className={`badge ${o.type === 'BUY' ? 'badge-green' : 'badge-red'}`}>{o.type}</span></td>
                     <td className="num">{formatQuantity(o.quantity)}</td>
-                    <td className="num">{formatNumber(o.estimatedPrice)}</td>
-                    <td className="num">{formatNumber(Number(o.quantity) * Number(o.estimatedPrice))}</td>
+                    <td className="num">{money(o.estimatedPrice)}</td>
+                    <td className="num">{money(Number(o.quantity) * Number(o.estimatedPrice))}</td>
                   </tr>
                 ))}
               </tbody>
             </table>
-            <p className="muted">ขายรวม {formatNumber(sellValue)} · ซื้อรวม {formatNumber(buyValue)}</p>
+            <p className="muted">ขายรวม {money(sellValue)} · ซื้อรวม {money(buyValue)} {currency}</p>
             {Math.abs(netCash) >= 0.01 && (
               <p className="hint">
                 {netCash > 0
-                  ? `ได้เงินสดเหลือจากการรีบาลานซ์ ${formatNumber(netCash)} USD`
-                  : `ต้องใช้เงินเพิ่ม ${formatNumber(-netCash)} USD`}
+                  ? `ได้เงินสดเหลือจากการรีบาลานซ์ ${money(netCash)} ${currency}`
+                  : `ต้องใช้เงินเพิ่ม ${money(-netCash)} ${currency}`}
                 {' '}— ระบบบันทึกเฉพาะรายการซื้อขาย ยังไม่ได้ติดตามยอดเงินสดในพอร์ต
               </p>
             )}
