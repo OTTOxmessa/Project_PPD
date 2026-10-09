@@ -25,6 +25,7 @@ public class HoldingMapper {
         return new HoldingResponse(
                 holding.getAsset().getId(), holding.getAsset().getSymbol(), holding.getAsset().getName(),
                 holding.getQuantity(), holding.getAvgCost(), price,
-                marketValue, costValue, gain, gainPercent, holding.getUpdatedAt());
+                marketValue, costValue, gain, gainPercent, holding.getUpdatedAt(),
+                holding.getAsset().getPriceSource());
     }
 }

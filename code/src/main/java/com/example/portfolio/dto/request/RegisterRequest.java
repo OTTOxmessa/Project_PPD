@@ -5,8 +5,8 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 
 public record RegisterRequest(
-        @NotBlank String username,
-        @NotBlank @Email(message = "รูปแบบอีเมลไม่ถูกต้อง") String email,
-        @NotBlank @Size(min = 8, message = "รหัสผ่านต้องยาวอย่างน้อย 8 ตัวอักษร") String password
+        @NotBlank(message = "กรุณากรอกชื่อผู้ใช้") String username,
+        @NotBlank(message = "กรุณากรอกอีเมล") @Email(message = "รูปแบบอีเมลไม่ถูกต้อง") String email,
+        @NotBlank(message = "กรุณากรอกรหัสผ่าน") @Size(min = 8, message = "รหัสผ่านต้องยาวอย่างน้อย 8 ตัวอักษร") String password
 ) {
 }

@@ -11,6 +11,7 @@ spring:
     hibernate:
       ddl-auto: validate      # production ห้ามให้ Hibernate auto-generate schema เด็ดขาด
     show-sql: false
+    open-in-view: true        # ระบุชัดเจน (mapper อ่าน lazy relation ตอนสร้าง response) และปิด warning ตอน start
 
   sql:
     init:

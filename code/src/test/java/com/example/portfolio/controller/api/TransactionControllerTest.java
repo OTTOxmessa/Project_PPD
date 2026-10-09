@@ -20,6 +20,8 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 
+import static org.hamcrest.Matchers.hasItem;
+import static org.hamcrest.Matchers.hasSize;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.eq;
@@ -92,6 +94,29 @@ class TransactionControllerTest {
                 .andExpect(status().isBadRequest());
 
         verifyNoInteractions(transactionService);
+    }
+
+    @Test
+    @DisplayName("ราคาเป็น 0 → 400 และ details บอกชื่อฟิลด์ price พร้อมข้อความภาษาไทย")
+    void zeroPriceRejectedWithFieldName() throws Exception {
+        mockMvc.perform(post(URL).contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"assetId\":10,\"type\":\"BUY\",\"quantity\":1,\"price\":0}"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.message").value("ข้อมูลที่ส่งมาไม่ผ่านการตรวจสอบ"))
+                .andExpect(jsonPath("$.details[0]").value("price: ราคาต่อหน่วยต้องมากกว่า 0"));
+
+        verifyNoInteractions(transactionService);
+    }
+
+    @Test
+    @DisplayName("ไม่กรอกทั้งจำนวนและราคา → 400 และ details บอกครบทั้ง 2 ฟิลด์")
+    void missingFieldsAllReported() throws Exception {
+        mockMvc.perform(post(URL).contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"assetId\":10,\"type\":\"BUY\"}"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.details", hasSize(2)))
+                .andExpect(jsonPath("$.details", hasItem("quantity: กรุณากรอกจำนวน")))
+                .andExpect(jsonPath("$.details", hasItem("price: กรุณากรอกราคาต่อหน่วย")));
     }
 
     @Test

@@ -14,7 +14,7 @@ function AppNav() {
 
   return (
     <nav className="navbar">
-      <span className="brand">📈 Portfolio</span>
+      <span className="brand">Portfolio</span>
       <NavLink to="/" end>กระดานเทรด</NavLink>
       <NavLink to="/assets">สินทรัพย์</NavLink>
       <span className="navbar-spacer" />
