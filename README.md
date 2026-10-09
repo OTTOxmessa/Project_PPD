@@ -1,6 +1,6 @@
 # ระบบจัดการพอร์ตการลงทุน (Investment Portfolio Management System)
 
-ระบบบริหารพอร์ตการลงทุนสำหรับนักลงทุนรายบุคคล รองรับหุ้นไทย (SET) หุ้นสหรัฐฯ ETF และคริปโต
+ระบบบริหารพอร์ตการลงทุนสำหรับนักลงทุนรายบุคคล รองรับหุ้นและ ETF ในตลาดสหรัฐฯ (S&P 500, Dow Jones และ ETF หลัก) คิดมูลค่าเป็น USD
 ผู้ใช้สร้างพอร์ต บันทึกการซื้อ-ขาย และติดตามกำไร/ขาดทุนได้ในที่เดียว พร้อมเครื่องมือวิเคราะห์ 5 ด้าน ได้แก่
 **การวางสัดส่วนสินทรัพย์ (Asset Allocation), แนวรับ-แนวต้าน (Support/Resistance), แจ้งเตือนราคา (Price Alert),
 เปรียบเทียบผลตอบแทนกับตลาด (Benchmark Comparison) และระบบรีบาลานซ์ (Rebalancing)**
@@ -29,9 +29,9 @@
 | 1. Asset Allocation | Donut chart สัดส่วนปัจจุบัน, กำหนดสัดส่วนเป้าหมาย, เปรียบเทียบปัจจุบัน vs เป้าหมาย (3 วิธีคำนวณ) |
 | 2. Support/Resistance | คำนวณแนวรับ-แนวต้านแบบ Pivot Point และ Moving Average Band แสดงบนกราฟ |
 | 3. Price Alert | ตั้งแจ้งเตือนเมื่อราคาสูง/ต่ำกว่าเป้า ระบบตรวจอัตโนมัติเป็นระยะ |
-| 4. Benchmark Comparison | เปรียบเทียบผลตอบแทนของพอร์ตกับดัชนี SET ในช่วงเวลาที่เลือก |
+| 4. Benchmark Comparison | เปรียบเทียบผลตอบแทนของพอร์ตกับดัชนี S&P 500 หรือ Dow Jones ในช่วงเวลาที่เลือก |
 | 5. Rebalancing | คำนวณแผนซื้อ-ขาย (Threshold / Calendar) ดูตัวอย่างก่อนยืนยัน และบันทึกประวัติ |
-| อื่น ๆ | สมัครสมาชิก/เข้าสู่ระบบ (JWT), ค้นหาหุ้นแบบ Auto-complete, เพิ่มหุ้นจากหน้าพอร์ตได้ทันที |
+| อื่น ๆ | สมัครสมาชิก/เข้าสู่ระบบ (JWT), ค้นหาหุ้นแบบ Auto-complete จากรายชื่อ S&P 500 + ETF 69 ตัว (572 รายการ) ถ้าไม่พบค้นต่อจาก Yahoo Finance ให้เจอหุ้นทุกตัวในตลาดสหรัฐฯ, เพิ่มหุ้นจากหน้าพอร์ตได้ทันที |
 
 ---
 
@@ -48,7 +48,7 @@
 | Frontend | React 18, Vite 5, React Router 6, Axios |
 | Charts | TradingView Lightweight Charts 4.2.3, Recharts |
 | Testing | JUnit 5, Mockito, Spring Boot Test |
-| Market Data | Yahoo Finance (ราคาปิดรายวัน) + ข้อมูลจำลองเป็นทางสำรอง |
+| Market Data | Yahoo Finance (ราคาปิดรายวัน, ดัชนี `^GSPC` และ `^DJI`) + ข้อมูลจำลองเป็นทางสำรอง |
 | Version Control | Git + GitHub |
 | Deployment | Render + Neon PostgreSQL |
 
@@ -101,7 +101,7 @@ flowchart TD
 | Behavioral | **Template Method** | `PerformanceReportTemplate` → `BenchmarkComparisonService` |
 | Behavioral | **Command** | `BuyCommand`, `SellCommand` สร้างผ่าน `RebalanceCommands` ในการรีบาลานซ์ (ขายก่อนซื้อ) |
 | Behavioral | **Chain of Responsibility** | ตรวจก่อนรีบาลานซ์ 3 ห่วง: `MinimumHoldingsValidationHandler` → `AllocationTargetsDefinedHandler` → `TargetSumValidationHandler` |
-| Structural (เสริม) | **Adapter** | `YahooFinancePriceSource` (แปลงข้อมูล Yahoo เป็น `PriceBar`), `ExternalMarketDataAdapter` |
+| Structural (เสริม) | **Adapter** | `YahooFinancePriceSource` (แปลงข้อมูล Yahoo เป็น `PriceBar`), `YahooSymbolSearch` (แปลงผลค้นหา Yahoo เป็น `SymbolInfo`), `ExternalMarketDataAdapter` |
 
 รายละเอียดแต่ละ pattern และการวิเคราะห์ SOLID อยู่ที่ [`doc/design-patterns.md`](doc/design-patterns.md) และ [`doc/solid-analysis.md`](doc/solid-analysis.md)
 
@@ -197,7 +197,7 @@ npm run dev
 |---|---|
 | `demo@portfolio.com` | `demo1234` |
 
-บัญชีทดลองสร้างอัตโนมัติจาก `data.sql` ตอนเริ่มแอป พร้อมพอร์ตตัวอย่าง 7 สินทรัพย์และ Watchlist
+บัญชีทดลองสร้างอัตโนมัติจาก `data.sql` ตอนเริ่มแอป พร้อมพอร์ตตัวอย่างสกุล USD 7 สินทรัพย์ (AAPL, MSFT, NVDA, JPM, KO, VOO, TLT) และ Watchlist
 
 > **แหล่งข้อมูลราคา:** ระบบดึงราคาปิดรายวันจาก Yahoo Finance หลังเริ่มแอปและทุก 6 ชั่วโมง
 > ถ้าเชื่อมต่อไม่ได้หรือไม่มีข้อมูลหุ้นตัวนั้น จะใช้ข้อมูลจำลองแทนและแสดงป้าย "จำลอง" บนหน้าจอ
@@ -232,7 +232,7 @@ Swagger UI (เมื่อ backend รันอยู่): **http://localhost:8
 | GET · PUT | `/api/v1/portfolios/{id}/allocation/targets` | ดู / กำหนดสัดส่วนเป้าหมาย | 200, 400, 404 |
 | GET · POST | `/api/v1/portfolios/{id}/alerts` | รายการ / สร้างแจ้งเตือนราคา | 200, 201, 400, 404 |
 | GET · PUT · DELETE | `/api/v1/portfolios/{id}/alerts/{alertId}` | ดู / แก้ / ลบแจ้งเตือน (แก้ได้เฉพาะสถานะ PENDING) | 200, 204, 400, 404, 409 |
-| GET | `/api/v1/portfolios/{id}/performance?benchmark=SET&from=&to=` | เปรียบเทียบผลตอบแทนกับตลาด | 200, 400, 404 |
+| GET | `/api/v1/portfolios/{id}/performance?benchmark=SPX|DJI&from=&to=` | เปรียบเทียบผลตอบแทนกับตลาด | 200, 400, 404 |
 | GET | `/api/v1/portfolios/{id}/rebalance-plan?method=threshold\|calendar` | ดูแผนรีบาลานซ์ (ยังไม่ซื้อขายจริง) | 200, 400, 404 |
 | POST | `/api/v1/portfolios/{id}/rebalances?method=` | รีบาลานซ์จริง สร้าง RebalanceLog ใหม่ | 201, 400, 404, 409 (พอร์ตยังไม่พร้อม) |
 | GET | `/api/v1/portfolios/{id}/rebalances?page=&size=&sort=triggeredAt,desc` | ประวัติรีบาลานซ์ (**Pagination & Sorting**) | 200, 404 |
@@ -298,6 +298,28 @@ mvn test
 | Frontend | [กรอก] |
 | Backend API | [กรอก] |
 | Swagger UI | [กรอก]/swagger-ui.html |
+
+---
+
+## ขอบเขตของระบบและแนวทางการพัฒนาต่อ
+
+### ขอบเขตปัจจุบัน
+- รองรับเฉพาะ**หุ้นและ ETF ในตลาดสหรัฐฯ** ราคาทุกตัวและมูลค่าพอร์ตเป็น **USD** พอร์ตทุกพอร์ตใช้สกุล USD
+- ตรวจตั้งแต่ฝั่ง API ไม่ใช่แค่หน้าเว็บ (`service/market/UsMarket`): ตลาดอื่น, คริปโต หรือสกุลเงินอื่น ตอบ **400** พร้อมเหตุผล
+- รายชื่อหุ้นสำหรับค้นหา (`symbols.txt`): สมาชิก **S&P 500** ทั้งหมด (ซึ่งรวม **Dow Jones 30** ทุกตัวแล้ว) และ ETF หลักของสหรัฐฯ 69 ตัว
+- ถ้าคำค้นไม่ตรงกับรายชื่อข้างบน ระบบค้นต่อจาก **Yahoo Finance** (`YahooSymbolSearch`) จึงเจอหุ้นและ ETF **ทุกตัวที่จดทะเบียนใน NYSE, NASDAQ, NYSE American, NYSE Arca และ Cboe** (เช่น RKLB, EOSE) ไม่รวมหุ้นนอกตลาด (OTC/Pink Sheets)
+- ดัชนีอ้างอิง: **S&P 500** (`SPX` → `^GSPC`) และ **Dow Jones Industrial Average** (`DJI` → `^DJI`)
+
+เหตุผลที่จำกัดตลาดเดียว: ระบบยังไม่มีการแปลงสกุลเงิน ถ้าพอร์ตเดียวมีทั้งหุ้นไทย (บาท) และหุ้นสหรัฐฯ (ดอลลาร์) มูลค่ารวม สัดส่วน แผนรีบาลานซ์ และการเทียบกับตลาดจะผิดทั้งหมด
+และข้อมูลหุ้นสหรัฐฯ จาก Yahoo Finance ครบถ้วนกว่า (เช่น ดัชนี SET ดึงได้ไม่ครบ)
+
+### แนวทางการพัฒนาต่อ
+1. **แสดงผลเป็นเงินบาท (ดูอย่างเดียว)** ใช้อัตรา USD/THB รายวันจาก Yahoo (`THB=X`) แปลงตอนแสดงผล โดยข้อมูลและการคำนวณยังเป็น USD
+2. **รองรับตลาดอื่น เริ่มจากตลาดหลักทรัพย์แห่งประเทศไทย (SET)** แยกสกุลเงินต่อพอร์ต และเพิ่มดัชนี SET เป็น benchmark
+3. **แปลงสกุลเงินจริง** เก็บอัตราแลกเปลี่ยนย้อนหลัง ให้พอร์ตเดียวถือหลายตลาดได้และคำนวณกำไรที่รวมผลจากค่าเงิน
+4. **คริปโต** (BTC, ETH ฯลฯ) ซึ่งซื้อขายเป็นทศนิยมและเปิดตลอด 24 ชั่วโมง
+5. **บัญชีเงินสดในพอร์ต** เพื่อเก็บเงินที่เหลือจากการขายหรือการรีบาลานซ์แบบ Threshold
+6. **ซื้อเศษหุ้น (fractional shares)** ซึ่งโบรกเกอร์สหรัฐฯ บางเจ้ารองรับ ตอนนี้ระบบปัดหุ้นและ ETF ในแผนรีบาลานซ์เป็นจำนวนเต็ม
 
 ---
 
