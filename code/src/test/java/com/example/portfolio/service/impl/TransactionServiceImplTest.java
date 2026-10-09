@@ -47,7 +47,7 @@ class TransactionServiceImplTest {
 
     private void portfolioAndAssetExist() {
         when(portfolioRepository.findById(1L)).thenReturn(Optional.of(Portfolio.builder().id(1L).build()));
-        when(assetRepository.findById(10L)).thenReturn(Optional.of(Asset.builder().id(10L).symbol("AOT").build()));
+        when(assetRepository.findById(10L)).thenReturn(Optional.of(Asset.builder().id(10L).symbol("MSFT").build()));
     }
 
     @Test
@@ -62,7 +62,7 @@ class TransactionServiceImplTest {
 
         verify(holdingService).applyTransaction(1L, 10L, TransactionType.BUY, new BigDecimal("100"), new BigDecimal("60"));
         assertThat(saved.getType()).isEqualTo(TransactionType.BUY);
-        assertThat(saved.getAsset().getSymbol()).isEqualTo("AOT");
+        assertThat(saved.getAsset().getSymbol()).isEqualTo("MSFT");
         assertThat(saved.getExecutedAt()).isAfterOrEqualTo(before);
     }
 

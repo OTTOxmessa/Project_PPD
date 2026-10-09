@@ -74,31 +74,31 @@ class AllocationServiceImplTest {
     @Test
     @DisplayName("compare (target): คำนวณ drift = สัดส่วนจริง − เป้าหมาย ต่อสินทรัพย์")
     void compareComputesDrift() {
-        Asset ptt = asset(1, "PTT");
-        Asset kbank = asset(2, "KBANK");
-        when(holdingRepository.findByPortfolioId(9L)).thenReturn(List.of(holding(ptt, "70"), holding(kbank, "30")));
+        Asset aapl = asset(1, "AAPL");
+        Asset jpm = asset(2, "JPM");
+        when(holdingRepository.findByPortfolioId(9L)).thenReturn(List.of(holding(aapl, "70"), holding(jpm, "30")));
         when(priceHistoryRepository.findTopByAssetIdOrderByPriceDateDesc(1L)).thenReturn(Optional.of(close("10")));
         when(priceHistoryRepository.findTopByAssetIdOrderByPriceDateDesc(2L)).thenReturn(Optional.of(close("10")));
         when(allocationTargetRepository.findByPortfolioId(9L)).thenReturn(List.of(
-                AllocationTarget.builder().asset(ptt).targetPercent(new BigDecimal("50")).build(),
-                AllocationTarget.builder().asset(kbank).targetPercent(new BigDecimal("50")).build()));
+                AllocationTarget.builder().asset(aapl).targetPercent(new BigDecimal("50")).build(),
+                AllocationTarget.builder().asset(jpm).targetPercent(new BigDecimal("50")).build()));
 
         List<AllocationComparison> result = allocationService.compare(9L, "target");
 
-        AllocationComparison pttRow = result.stream().filter(r -> r.symbol().equals("PTT")).findFirst().orElseThrow();
-        assertThat(pttRow.currentPercent()).isEqualByComparingTo("70");
-        assertThat(pttRow.targetPercent()).isEqualByComparingTo("50");
-        assertThat(pttRow.driftPercent()).isEqualByComparingTo("20");
-        AllocationComparison kbankRow = result.stream().filter(r -> r.symbol().equals("KBANK")).findFirst().orElseThrow();
-        assertThat(kbankRow.driftPercent()).isEqualByComparingTo("-20");
+        AllocationComparison aaplRow = result.stream().filter(r -> r.symbol().equals("AAPL")).findFirst().orElseThrow();
+        assertThat(aaplRow.currentPercent()).isEqualByComparingTo("70");
+        assertThat(aaplRow.targetPercent()).isEqualByComparingTo("50");
+        assertThat(aaplRow.driftPercent()).isEqualByComparingTo("20");
+        AllocationComparison jpmRow = result.stream().filter(r -> r.symbol().equals("JPM")).findFirst().orElseThrow();
+        assertThat(jpmRow.driftPercent()).isEqualByComparingTo("-20");
     }
 
     @Test
     @DisplayName("compare (equal): เลือก Strategy จากชื่อ ได้น้ำหนักเท่ากันแม้มูลค่าต่างกัน")
     void compareSelectsStrategyByName() {
-        Asset ptt = asset(1, "PTT");
-        Asset kbank = asset(2, "KBANK");
-        when(holdingRepository.findByPortfolioId(9L)).thenReturn(List.of(holding(ptt, "70"), holding(kbank, "30")));
+        Asset aapl = asset(1, "AAPL");
+        Asset jpm = asset(2, "JPM");
+        when(holdingRepository.findByPortfolioId(9L)).thenReturn(List.of(holding(aapl, "70"), holding(jpm, "30")));
         when(priceHistoryRepository.findTopByAssetIdOrderByPriceDateDesc(1L)).thenReturn(Optional.of(close("10")));
         when(priceHistoryRepository.findTopByAssetIdOrderByPriceDateDesc(2L)).thenReturn(Optional.of(close("10")));
         when(allocationTargetRepository.findByPortfolioId(9L)).thenReturn(List.of());
@@ -120,8 +120,8 @@ class AllocationServiceImplTest {
     @Test
     @DisplayName("compare: สินทรัพย์ที่ไม่ได้ตั้งเป้า → เป้าหมาย 0%")
     void compareWithoutTarget() {
-        Asset btc = asset(3, "BTC");
-        when(holdingRepository.findByPortfolioId(9L)).thenReturn(List.of(holding(btc, "1")));
+        Asset nvda = asset(3, "NVDA");
+        when(holdingRepository.findByPortfolioId(9L)).thenReturn(List.of(holding(nvda, "1")));
         when(priceHistoryRepository.findTopByAssetIdOrderByPriceDateDesc(3L)).thenReturn(Optional.of(close("2000000")));
         when(allocationTargetRepository.findByPortfolioId(9L)).thenReturn(List.of());
 
@@ -151,16 +151,16 @@ class AllocationServiceImplTest {
     @DisplayName("upsertTarget: ยังไม่มีเป้า → สร้างแถวใหม่ผูกกับพอร์ตและสินทรัพย์")
     void upsertCreatesNew() {
         Portfolio portfolio = Portfolio.builder().id(9L).build();
-        Asset ptt = asset(1, "PTT");
+        Asset aapl = asset(1, "AAPL");
         when(allocationTargetRepository.findByPortfolioIdAndAssetId(9L, 1L)).thenReturn(Optional.empty());
         when(portfolioRepository.findById(9L)).thenReturn(Optional.of(portfolio));
-        when(assetRepository.findById(1L)).thenReturn(Optional.of(ptt));
+        when(assetRepository.findById(1L)).thenReturn(Optional.of(aapl));
         when(allocationTargetRepository.save(any(AllocationTarget.class))).thenAnswer(inv -> inv.getArgument(0));
 
         AllocationTarget result = allocationService.upsertTarget(9L, 1L, new BigDecimal("40"));
 
         assertThat(result.getPortfolio()).isSameAs(portfolio);
-        assertThat(result.getAsset()).isSameAs(ptt);
+        assertThat(result.getAsset()).isSameAs(aapl);
         assertThat(result.getTargetPercent()).isEqualByComparingTo("40");
     }
 
