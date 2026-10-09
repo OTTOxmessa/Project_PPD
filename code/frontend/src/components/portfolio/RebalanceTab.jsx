@@ -101,8 +101,8 @@ function RebalanceTab({ portfolioId }) {
                   <th>Symbol</th>
                   <th>คำสั่ง</th>
                   <th className="num">จำนวน</th>
-                  <th className="num">ราคาประมาณ</th>
-                  <th className="num">มูลค่า</th>
+                  <th className="num">ราคาประมาณ (USD)</th>
+                  <th className="num">มูลค่า (USD)</th>
                 </tr>
               </thead>
               <tbody>
@@ -121,8 +121,8 @@ function RebalanceTab({ portfolioId }) {
             {Math.abs(netCash) >= 0.01 && (
               <p className="hint">
                 {netCash > 0
-                  ? `ได้เงินสดเหลือจากการรีบาลานซ์ ${formatNumber(netCash)} บาท`
-                  : `ต้องใช้เงินเพิ่ม ${formatNumber(-netCash)} บาท`}
+                  ? `ได้เงินสดเหลือจากการรีบาลานซ์ ${formatNumber(netCash)} USD`
+                  : `ต้องใช้เงินเพิ่ม ${formatNumber(-netCash)} USD`}
                 {' '}— ระบบบันทึกเฉพาะรายการซื้อขาย ยังไม่ได้ติดตามยอดเงินสดในพอร์ต
               </p>
             )}

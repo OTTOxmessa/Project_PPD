@@ -7,7 +7,7 @@ import apiClient from '../api/client.js'
 function SymbolSearch({
   onSelect,
   onQueryChange,
-  placeholder = 'ค้นหาหุ้น เช่น AAPL, PTT',
+  placeholder = 'ค้นหาหุ้นสหรัฐฯ เช่น AAPL, MSFT',
   clearOnSelect = true,
   initialValue = '',
   className = '',

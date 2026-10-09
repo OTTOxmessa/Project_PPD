@@ -95,7 +95,7 @@ function HoldingsTab({ portfolioId, onAssetsChanged }) {
         <div className="form-row">
           <div className="form-group form-group-wide">
             <label>หุ้น</label>
-            <SymbolSearch key={searchKey} onSelect={handleSelect} placeholder="พิมพ์ชื่อหรือ symbol เช่น aapl, ptt" />
+            <SymbolSearch key={searchKey} onSelect={handleSelect} placeholder="พิมพ์ชื่อหรือ symbol เช่น aapl, msft, voo" />
             {selected && (
               <div className="selected-asset">
                 <strong>{selected.symbol}</strong> {selected.name}
@@ -116,7 +116,7 @@ function HoldingsTab({ portfolioId, onAssetsChanged }) {
               onChange={(e) => setForm({ ...form, quantity: e.target.value })} required />
           </div>
           <div className="form-group">
-            <label>ราคาต่อหน่วย</label>
+            <label>ราคาต่อหน่วย (USD)</label>
             <input type="number" step="any" min="0" value={form.price}
               onChange={(e) => setForm({ ...form, price: e.target.value })} required />
           </div>
@@ -138,7 +138,7 @@ function HoldingsTab({ portfolioId, onAssetsChanged }) {
       ) : (
         <>
           <div className="card table-wrap">
-            <h2>สินทรัพย์ที่ถืออยู่</h2>
+            <h2>สินทรัพย์ที่ถืออยู่ <span className="muted small">(USD)</span></h2>
             {holdings.length === 0 ? (
               <p className="empty-state">ยังไม่มีสินทรัพย์ในพอร์ต — ค้นหาหุ้นด้านบนเพื่อซื้อได้เลย</p>
             ) : (

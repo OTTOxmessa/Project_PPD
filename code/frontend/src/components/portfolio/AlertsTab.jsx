@@ -89,7 +89,7 @@ function AlertsTab({ portfolioId, assets }) {
             </select>
           </div>
           <div className="form-group">
-            <label>ราคาเป้าหมาย</label>
+            <label>ราคาเป้าหมาย (USD)</label>
             <input type="number" step="any" min="0" value={form.targetPrice}
               onChange={(e) => setForm({ ...form, targetPrice: e.target.value })} required />
           </div>
@@ -119,7 +119,7 @@ function AlertsTab({ portfolioId, assets }) {
               <tr>
                 <th>Symbol</th>
                 <th>เงื่อนไข</th>
-                <th className="num">ราคาเป้าหมาย</th>
+                <th className="num">ราคาเป้าหมาย (USD)</th>
                 <th>สถานะ</th>
                 <th>สร้างเมื่อ</th>
                 <th />
