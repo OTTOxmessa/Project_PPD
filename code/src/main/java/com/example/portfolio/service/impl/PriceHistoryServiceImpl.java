@@ -105,7 +105,7 @@ public class PriceHistoryServiceImpl implements PriceHistoryService {
             return false;
         }
         List<PriceBar> bars = priceSource.fetchDailyHistory(ticker.get());
-        // ดัชนีใช้เป็นเกณฑ์เปรียบเทียบผลตอบแทน ถ้าแหล่งภายนอกส่งมาแค่ไม่กี่วัน (เคยได้ ^SET.BK แค่ 1 วัน)
+        // ดัชนีใช้เป็นเกณฑ์เปรียบเทียบผลตอบแทน ถ้าแหล่งภายนอกส่งมาแค่ไม่กี่วัน (เช่น ได้มาแค่ 1 วัน)
         // ห้ามลบประวัติเดิมทิ้ง ไม่อย่างนั้นราคาต้นช่วงกับปลายช่วงจะเท่ากัน และผลตอบแทนตลาดกลายเป็น 0% ทุกช่วง
         if (bars.size() < MIN_INDEX_HISTORY_DAYS) {
             log.warn("ข้อมูลดัชนี {} จาก {} มีแค่ {} วัน (ต้องมีอย่างน้อย {}) จึงใช้ข้อมูลเดิม",

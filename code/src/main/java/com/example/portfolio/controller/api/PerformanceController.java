@@ -21,7 +21,7 @@ public class PerformanceController {
     private final PerformanceService performanceService;
     private final PortfolioService portfolioService;
 
-    // ตัวอย่าง: GET /performance?benchmark=SET&from=2026-01-05&to=2026-09-24
+    // ตัวอย่าง: GET /performance?benchmark=SPX&from=2026-01-05&to=2026-09-24 (SPX = S&P 500, DJI = Dow Jones)
     @GetMapping
     public PerformanceReportResponse getReport(
             @AuthenticationPrincipal Long userId,

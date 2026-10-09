@@ -4,7 +4,7 @@ import apiClient from '../../api/client.js'
 import { apiError, daysAgo, formatPercent, today } from '../../utils/format.js'
 
 function PerformanceTab({ portfolioId }) {
-  const [benchmark, setBenchmark] = useState('SET')
+  const [benchmark, setBenchmark] = useState('SPX')
   const [from, setFrom] = useState(daysAgo(90))
   const [to, setTo] = useState(today())
   const [report, setReport] = useState(null)
@@ -47,7 +47,8 @@ function PerformanceTab({ portfolioId }) {
         <div className="form-group">
           <label>ดัชนีอ้างอิง</label>
           <select value={benchmark} onChange={(e) => setBenchmark(e.target.value)}>
-            <option value="SET">SET Index</option>
+            <option value="SPX">S&amp;P 500</option>
+            <option value="DJI">Dow Jones Industrial Average</option>
           </select>
         </div>
         <div className="form-group">
