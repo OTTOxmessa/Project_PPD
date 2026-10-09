@@ -1,6 +1,7 @@
 package com.example.portfolio.service;
 
 import com.example.portfolio.domain.entity.Holding;
+import com.example.portfolio.domain.entity.Transaction;
 import com.example.portfolio.domain.enums.TransactionType;
 
 import java.math.BigDecimal;
@@ -14,4 +15,8 @@ public interface HoldingService {
     // ปรับ holding ตามธุรกรรมที่เกิดขึ้น (BUY ถัวเฉลี่ยต้นทุน, SELL ลดจำนวน)
     Holding applyTransaction(Long portfolioId, Long assetId, TransactionType type,
                               BigDecimal quantity, BigDecimal price);
+
+    // คำนวณ holding ใหม่ทั้งหมดจากประวัติ (เรียงตามวันที่แล้ว) ใช้หลังแก้หรือลบรายการย้อนหลัง
+    // ถ้ามีจุดไหนขายเกินจำนวนที่ถือ ณ ตอนนั้น -> IllegalStateException (409) และไม่บันทึกอะไรเลย
+    Holding recalculate(Long portfolioId, Long assetId, List<Transaction> history);
 }

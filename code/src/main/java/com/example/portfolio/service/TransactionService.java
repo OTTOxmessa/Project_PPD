@@ -14,4 +14,11 @@ public interface TransactionService {
     // executedAt = null หมายถึงเวลาปัจจุบัน
     Transaction record(Long portfolioId, Long assetId, TransactionType type,
                        BigDecimal quantity, BigDecimal price, LocalDateTime executedAt);
+
+    // แก้รายการเดิม (สินทรัพย์เปลี่ยนไม่ได้) แล้วคำนวณ holding ของสินทรัพย์นั้นใหม่จากประวัติทั้งหมด
+    // executedAt = null หรือวันเดียวกับเดิม -> คงเวลาเดิมไว้
+    Transaction update(Long portfolioId, Long transactionId, TransactionType type,
+                       BigDecimal quantity, BigDecimal price, LocalDateTime executedAt);
+
+    void delete(Long portfolioId, Long transactionId);
 }

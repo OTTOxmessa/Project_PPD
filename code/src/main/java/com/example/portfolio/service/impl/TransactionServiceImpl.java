@@ -19,7 +19,7 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 
-// จุดเดียวที่ "บันทึก Transaction + อัปเดต Holding" ไปพร้อมกันใน transaction เดียว
+// จุดเดียวที่ "บันทึก/แก้/ลบ Transaction + อัปเดต Holding" ไปพร้อมกันใน transaction เดียว
 // ทั้ง TransactionController และ BuyCommand/SellCommand (rebalance) เรียกผ่านที่นี่
 @Service
 @RequiredArgsConstructor
@@ -58,5 +58,43 @@ public class TransactionServiceImpl implements TransactionService {
                 .executedAt(executedAt != null ? executedAt : LocalDateTime.now())
                 .build();
         return transactionRepository.save(transaction);
+    }
+
+    @Override
+    @Transactional
+    public Transaction update(Long portfolioId, Long transactionId, TransactionType type,
+                              BigDecimal quantity, BigDecimal price, LocalDateTime executedAt) {
+        Transaction transaction = findInPortfolio(portfolioId, transactionId);
+        transaction.setType(type);
+        transaction.setQuantity(quantity);
+        transaction.setPrice(price);
+        // เปลี่ยนวันที่เท่านั้นจึงเปลี่ยนเวลา — แก้แค่ราคา/จำนวน ลำดับในวันเดิมต้องไม่เลื่อน
+        if (executedAt != null && !executedAt.toLocalDate().equals(transaction.getExecutedAt().toLocalDate())) {
+            transaction.setExecutedAt(executedAt);
+        }
+        Transaction saved = transactionRepository.save(transaction);
+        rebuildHolding(portfolioId, transaction.getAsset().getId());
+        return saved;
+    }
+
+    @Override
+    @Transactional
+    public void delete(Long portfolioId, Long transactionId) {
+        Transaction transaction = findInPortfolio(portfolioId, transactionId);
+        Long assetId = transaction.getAsset().getId();
+        transactionRepository.delete(transaction);
+        rebuildHolding(portfolioId, assetId);
+    }
+
+    private Transaction findInPortfolio(Long portfolioId, Long transactionId) {
+        return transactionRepository.findByIdAndPortfolioId(transactionId, portfolioId)
+                .orElseThrow(() -> new ResourceNotFoundException("Transaction not found: " + transactionId));
+    }
+
+    // ทั้ง update และ delete อยู่ใน @Transactional เดียวกัน: ถ้า holding คำนวณใหม่แล้วติดลบ ทุกอย่าง rollback
+    // query นี้ทำให้ Hibernate flush การแก้/ลบข้างบนก่อน ประวัติที่ได้จึงเป็นค่าใหม่แล้ว
+    private void rebuildHolding(Long portfolioId, Long assetId) {
+        holdingService.recalculate(portfolioId, assetId,
+                transactionRepository.findByPortfolioIdAndAssetIdOrderByExecutedAtAscIdAsc(portfolioId, assetId));
     }
 }
