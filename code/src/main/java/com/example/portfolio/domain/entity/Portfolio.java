@@ -31,7 +31,7 @@ public class Portfolio {
     private String name;
 
     @Column(name = "base_currency", nullable = false, length = 10)
-    private String baseCurrency; // เช่น THB, USD
+    private String baseCurrency; // ตอนนี้รองรับเฉพาะ USD (ดู UsMarket)
 
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
