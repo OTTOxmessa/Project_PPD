@@ -54,6 +54,7 @@ mvn surefire-report:report
 | `SymbolSearchServiceImplTest` | จัดอันดับผลค้นหา รวมหุ้นในระบบกับรายชื่ออ้างอิงไม่ซ้ำ, ได้ครบแล้วไม่ค้น Yahoo, หาไม่เจอค้นต่อจาก Yahoo (RKLB), ผลจาก Yahoo ไม่ซ้ำ, คำค้นว่าง | 4 |
 | `YahooSymbolSearchTest` | Adapter ค้นหาหุ้นจาก Yahoo: เก็บหุ้น/ETF ตลาดสหรัฐฯ, ตัด OTC/ตลาดต่างประเทศ/คริปโต/กองทุนรวม/ดัชนี, BRK-B → BRK.B, จำผลคำค้นเดิม, Yahoo ใช้ไม่ได้ → list ว่าง | 6 |
 | `MarketDataRefreshServiceImplTest` | นับเฉพาะตัวที่อัปเดตสำเร็จ ตัวที่พังไม่ทำให้ตัวอื่นหยุด | 1 |
+| `ExchangeRateServiceImplTest` | อัตรา USD/THB ใช้ราคาปิดวันล่าสุดของ `THB=X` (ข้ามวันไม่มีราคา), จำค่าไว้ไม่ดึงซ้ำ, ดึงรอบใหม่ไม่ได้ใช้ค่าเดิม, ไม่เคยดึงได้ → empty | 4 |
 | `TransactionTypeTest` | แต่ละประเภทรู้ผลต่อจำนวนหน่วย (ใช้แทน switch) | 3 |
 | `PerformanceServiceImplTest` | ตรวจคำขอ (วันที่กลับด้าน, ไม่ระบุดัชนี) ก่อนส่งให้ Template Method | 3 |
 
@@ -88,6 +89,7 @@ mvn surefire-report:report
 | `AssetControllerTest` | CRUD สินทรัพย์: 200, 201, 204, 400 (ไม่ระบุประเภท), 404 (พร้อม `path`), 409 (symbol ซ้ำ, เปลี่ยน symbol, ลบตัวที่ยังถูกใช้, constraint ฐานข้อมูล), `PUT /assets/by-symbol/{symbol}` | 11 |
 | `PriceAlertControllerTest` | CRUD alert: 200, 201, 204, 400 (ราคาเป้า 0), 404 (พอร์ตคนอื่น), 409 (แก้ alert ที่แจ้งเตือนแล้ว) | 8 |
 | `RebalanceControllerTest` | `GET /rebalance-plan` 200, `POST /rebalances` 201, method ไม่รู้จัก 400, `GET /rebalances` แบ่งหน้าเรียงล่าสุดก่อน | 4 |
+| `ExchangeRateControllerTest` | 200 พร้อมอัตรา USD/THB, 503 เมื่อยังดึงอัตราไม่ได้ | 2 |
 
 ### Architecture
 
@@ -102,4 +104,4 @@ mvn surefire-report:report
 |---|---|---|
 | `PortfolioSystemApplicationTests` | Spring context โหลดได้ครบ (ต้องเปิด PostgreSQL) | 1 |
 
-**รวม 196 test cases**
+**รวม 202 test cases**
