@@ -28,7 +28,7 @@ jobs:
     # ค่าตรงกับ application-dev.yml และ docker-compose.yml
     services:
       postgres:
-        image: public.ecr.aws/docker/library/postgres:15-alpine
+        image: postgres:15-alpine
         env:
           POSTGRES_DB: portfolio_db
           POSTGRES_USER: postgres
