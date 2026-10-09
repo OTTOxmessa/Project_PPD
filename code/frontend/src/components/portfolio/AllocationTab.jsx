@@ -20,6 +20,7 @@ function AllocationTab({ portfolioId }) {
   const { currency, money } = useCurrency()
   const [holdings, setHoldings] = useState([])
   const [targets, setTargets] = useState({})
+  const [targetSymbols, setTargetSymbols] = useState({})
   const [comparison, setComparison] = useState([])
   const [method, setMethod] = useState('target')
   const [loading, setLoading] = useState(true)
@@ -36,10 +37,13 @@ function AllocationTab({ portfolioId }) {
     ])
     setHoldings(h.data)
     const map = {}
+    const symbols = {}
     t.data.forEach((x) => {
       map[x.assetId] = Number(x.targetPercent)
+      symbols[x.assetId] = x.symbol
     })
     setTargets(map)
+    setTargetSymbols(symbols)
   }, [portfolioId])
 
   const loadComparison = useCallback(async () => {
@@ -74,9 +78,19 @@ function AllocationTab({ portfolioId }) {
     }))
     .sort((a, b) => b.value - a.value)
 
+  // สินทรัพย์ที่ขายหมดแล้วแต่ยังมีเป้าค้างอยู่ — backend นับรวมใน 100% ด้วย จึงต้องแสดงให้เห็นและแก้เป็น 0 ได้
+  const heldIds = new Set(holdings.map((h) => h.assetId))
+  const orphanRows = Object.entries(targets)
+    .filter(([assetId, pct]) => !heldIds.has(Number(assetId)) && pct > 0)
+    .map(([assetId, pct]) => ({
+      assetId: Number(assetId), symbol: targetSymbols[assetId], name: 'ขายหมดแล้ว — ยังมีเป้าค้างอยู่',
+      color: 'var(--muted)', value: 0, percent: 0, target: pct,
+    }))
+  const tableRows = [...rows, ...orphanRows]
+
   const startEditing = () => {
     const inputs = {}
-    rows.forEach((r) => {
+    tableRows.forEach((r) => {
       inputs[r.assetId] = String(r.target)
     })
     setTargetInputs(inputs)
@@ -85,16 +99,17 @@ function AllocationTab({ portfolioId }) {
   }
 
   const inputSum = Object.values(targetInputs).reduce((s, v) => s + (Number(v) || 0), 0)
+  const overLimit = inputSum > 100.01 // เกณฑ์เดียวกับ backend (เผื่อปัดเศษ 0.01%)
 
   const handleSave = async () => {
     setSaving(true)
     setError(null)
     try {
-      const changed = rows.filter((r) => Number(targetInputs[r.assetId]) !== Number(r.target))
-      for (const r of changed) {
-        await apiClient.put(`/portfolios/${portfolioId}/allocation/targets`, {
-          assetId: r.assetId,
-          targetPercent: Number(targetInputs[r.assetId]) || 0,
+      const changed = tableRows.filter((r) => Number(targetInputs[r.assetId]) !== Number(r.target))
+      // ส่งทั้งชุดในครั้งเดียว: backend ตรวจผลรวมไม่เกิน 100% กับค่าชุดใหม่ และบันทึกทั้งหมดหรือไม่บันทึกเลย
+      if (changed.length) {
+        await apiClient.put(`/portfolios/${portfolioId}/allocation/targets/bulk`, {
+          targets: changed.map((r) => ({ assetId: r.assetId, targetPercent: Number(targetInputs[r.assetId]) || 0 })),
         })
       }
       await Promise.all([loadBase(), loadComparison()])
@@ -156,7 +171,7 @@ function AllocationTab({ portfolioId }) {
               </tr>
             </thead>
             <tbody>
-              {rows.map((r) => {
+              {tableRows.map((r) => {
                 const drift = r.percent - r.target
                 return (
                   <tr key={r.assetId}>
@@ -186,11 +201,12 @@ function AllocationTab({ portfolioId }) {
           {editing && (
             <div className="edit-actions">
               <span className={Math.abs(inputSum - 100) > 0.01 ? 'text-red' : 'text-green'}>
-                รวมเป้าหมาย {formatNumber(inputSum)}% {Math.abs(inputSum - 100) > 0.01 && '(ควรเท่ากับ 100%)'}
+                รวมเป้าหมาย {formatNumber(inputSum)}%{' '}
+                {overLimit ? '(เกิน 100% บันทึกไม่ได้)' : Math.abs(inputSum - 100) > 0.01 && '(ควรเท่ากับ 100% ก่อนรีบาลานซ์)'}
               </span>
               <div>
                 <button className="btn btn-secondary btn-sm" onClick={() => setEditing(false)} disabled={saving}>ยกเลิก</button>
-                <button className="btn btn-primary btn-sm" onClick={handleSave} disabled={saving}>
+                <button className="btn btn-primary btn-sm" onClick={handleSave} disabled={saving || overLimit}>
                   {saving ? 'กำลังบันทึก...' : 'บันทึก'}
                 </button>
               </div>
