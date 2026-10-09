@@ -6,6 +6,7 @@ import com.example.portfolio.exception.ResourceNotFoundException;
 import com.example.portfolio.repository.PortfolioRepository;
 import com.example.portfolio.repository.UserRepository;
 import com.example.portfolio.service.PortfolioService;
+import com.example.portfolio.service.market.UsMarket;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -25,6 +26,7 @@ public class PortfolioServiceImpl implements PortfolioService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found: " + userId));
         portfolio.setUser(user);
+        portfolio.setBaseCurrency(UsMarket.CURRENCY); // ระบบรองรับเฉพาะ USD (request อื่นถูกปฏิเสธที่ DTO แล้ว)
         return portfolioRepository.save(portfolio);
     }
 
@@ -45,7 +47,7 @@ public class PortfolioServiceImpl implements PortfolioService {
     public Portfolio update(Long id, Long userId, Portfolio updates) {
         Portfolio existing = getByIdForUser(id, userId);
         existing.setName(updates.getName());
-        existing.setBaseCurrency(updates.getBaseCurrency());
+        existing.setBaseCurrency(UsMarket.CURRENCY);
         return portfolioRepository.save(existing);
     }
 

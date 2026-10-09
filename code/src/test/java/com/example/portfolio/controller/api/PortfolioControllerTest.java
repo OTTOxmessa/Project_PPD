@@ -60,7 +60,7 @@ class PortfolioControllerTest {
     }
 
     private static Portfolio portfolio(Long id, String name) {
-        return Portfolio.builder().id(id).name(name).baseCurrency("THB").build();
+        return Portfolio.builder().id(id).name(name).baseCurrency("USD").build();
     }
 
     @Test
@@ -72,7 +72,7 @@ class PortfolioControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value(5))
                 .andExpect(jsonPath("$.name").value("Long-term"))
-                .andExpect(jsonPath("$.baseCurrency").value("THB"));
+                .andExpect(jsonPath("$.baseCurrency").value("USD"));
     }
 
     @Test
@@ -109,7 +109,7 @@ class PortfolioControllerTest {
     @DisplayName("GET /portfolios/summary → 200 สรุปมูลค่าทุกพอร์ต")
     void summary() throws Exception {
         when(portfolioValuationService.summarize(1L)).thenReturn(List.of(new PortfolioSummary(
-                5L, "Long-term", "THB", new BigDecimal("12000"), new BigDecimal("10000"),
+                5L, "Long-term", "USD", new BigDecimal("12000"), new BigDecimal("10000"),
                 new BigDecimal("2000"), new BigDecimal("20"), 3)));
 
         mockMvc.perform(get("/api/v1/portfolios/summary"))
@@ -140,10 +140,23 @@ class PortfolioControllerTest {
     void createValidationError() throws Exception {
         mockMvc.perform(post("/api/v1/portfolios")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"name\":\"\",\"baseCurrency\":\"THB\"}"))
+                        .content("{\"name\":\"\",\"baseCurrency\":\"USD\"}"))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.status").value(400))
                 .andExpect(jsonPath("$.details[0]").value(containsString("name")));
+
+        verifyNoInteractions(portfolioService);
+    }
+
+    @Test
+    @DisplayName("POST /portfolios สกุลเงิน THB → 400 เพราะระบบรองรับเฉพาะ USD และไม่เรียก service")
+    void createRejectsNonUsdCurrency() throws Exception {
+        mockMvc.perform(post("/api/v1/portfolios")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"name\":\"Thai Stocks\",\"baseCurrency\":\"THB\"}"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.details[0]").value(containsString("baseCurrency")))
+                .andExpect(jsonPath("$.details[0]").value(containsString("USD")));
 
         verifyNoInteractions(portfolioService);
     }
@@ -155,7 +168,7 @@ class PortfolioControllerTest {
 
         mockMvc.perform(put("/api/v1/portfolios/5")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"name\":\"Renamed\",\"baseCurrency\":\"THB\"}"))
+                        .content("{\"name\":\"Renamed\",\"baseCurrency\":\"USD\"}"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.name").value("Renamed"));
     }

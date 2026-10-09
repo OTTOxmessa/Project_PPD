@@ -3,7 +3,8 @@ import apiClient from '../api/client.js'
 import { apiError } from '../utils/format.js'
 import SymbolSearch from '../components/SymbolSearch.jsx'
 
-const ASSET_TYPES = ['STOCK', 'ETF', 'BOND', 'MUTUAL_FUND', 'CRYPTO', 'CASH']
+// ระบบรองรับเฉพาะหุ้นและ ETF ตลาดสหรัฐฯ (ประเภทอื่นอยู่ในแนวทางพัฒนาต่อ)
+const ASSET_TYPES = ['STOCK', 'ETF']
 const EMPTY_FORM = { symbol: '', name: '', assetType: 'STOCK', exchange: '' }
 
 function AssetListPage() {
@@ -67,7 +68,7 @@ function AssetListPage() {
               clearOnSelect={false}
               onSelect={handleSelect}
               onQueryChange={(q) => setForm((f) => ({ ...f, symbol: q }))}
-              placeholder="เช่น SCB, AAPL"
+              placeholder="เช่น AAPL, BRK.B"
             />
           </div>
           <div className="form-group">
@@ -84,13 +85,13 @@ function AssetListPage() {
           </div>
           <div className="form-group">
             <label htmlFor="exchange">ตลาด</label>
-            <input id="exchange" value={form.exchange} onChange={update('exchange')} placeholder="SET / US" />
+            <input id="exchange" value={form.exchange} onChange={update('exchange')} placeholder="US (NYSE / NASDAQ)" />
           </div>
         </div>
         <button type="submit" className="btn btn-primary" disabled={saving || !form.symbol.trim()}>
           {saving ? 'กำลังบันทึก...' : 'เพิ่มสินทรัพย์'}
         </button>
-        <p className="hint">หุ้นที่เพิ่มใหม่จะได้ข้อมูลราคาย้อนหลังแบบจำลอง 1 ปี เพื่อใช้ทดสอบกราฟและฟีเจอร์ต่าง ๆ</p>
+        <p className="hint">รองรับเฉพาะหุ้นและ ETF ตลาดสหรัฐฯ (ราคาเป็น USD) ระบบดึงราคาย้อนหลังจาก Yahoo Finance ถ้าดึงไม่ได้จะใช้ข้อมูลจำลองแทน</p>
       </form>
 
       {error && <p className="error-message">{error}</p>}

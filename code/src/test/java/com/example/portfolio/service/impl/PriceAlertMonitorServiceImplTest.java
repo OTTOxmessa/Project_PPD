@@ -70,7 +70,7 @@ class PriceAlertMonitorServiceImplTest {
     @Test
     @DisplayName("ราคาถึงเป้า → PENDING → TRIGGERED → NOTIFIED ในรอบเดียว แจ้งทุก observer และบันทึก")
     void triggersAndNotifiesAllObservers() {
-        PriceAlert alert = pendingAbove(1L, "PTT", "100");
+        PriceAlert alert = pendingAbove(1L, "AAPL", "100");
         BigDecimal price = new BigDecimal("120");
 
         monitor.checkAndNotify(alert, price);
@@ -84,7 +84,7 @@ class PriceAlertMonitorServiceImplTest {
     @Test
     @DisplayName("ราคายังไม่ถึงเป้า → ไม่แจ้ง สถานะยัง PENDING และไม่ต้องบันทึก")
     void notTriggeredYet() {
-        PriceAlert alert = pendingAbove(1L, "PTT", "100");
+        PriceAlert alert = pendingAbove(1L, "AAPL", "100");
 
         monitor.checkAndNotify(alert, new BigDecimal("80"));
 
@@ -96,9 +96,9 @@ class PriceAlertMonitorServiceImplTest {
     @Test
     @DisplayName("alert ที่แจ้งไปแล้ว / หมดอายุ → ไม่แจ้งซ้ำและไม่บันทึกซ้ำ")
     void finishedAlertsAreIgnored() {
-        PriceAlert notified = pendingAbove(1L, "PTT", "100");
+        PriceAlert notified = pendingAbove(1L, "AAPL", "100");
         notified.setStatus(AlertStatus.NOTIFIED);
-        PriceAlert expired = pendingAbove(2L, "AOT", "100");
+        PriceAlert expired = pendingAbove(2L, "MSFT", "100");
         expired.setStatus(AlertStatus.EXPIRED);
 
         monitor.checkAndNotify(notified, new BigDecimal("150"));
@@ -112,10 +112,10 @@ class PriceAlertMonitorServiceImplTest {
     @DisplayName("checkPendingAlerts: ตรวจทุก alert ที่รออยู่ ตัวที่ดึงราคาไม่ได้ไม่ทำให้ตัวอื่นหยุด")
     void checkPendingAlertsContinuesAfterFailure() {
         PriceAlert broken = pendingAbove(1L, "NOPRICE", "10");
-        PriceAlert ready = pendingAbove(2L, "AOT", "60");
+        PriceAlert ready = pendingAbove(2L, "MSFT", "60");
         when(priceAlertRepository.findByStatus(AlertStatus.PENDING)).thenReturn(List.of(broken, ready));
         when(marketDataProvider.getLatestPrice("NOPRICE")).thenThrow(new IllegalStateException("ยังไม่มีราคา"));
-        when(marketDataProvider.getLatestPrice("AOT")).thenReturn(new BigDecimal("61"));
+        when(marketDataProvider.getLatestPrice("MSFT")).thenReturn(new BigDecimal("61"));
 
         int checked = monitor.checkPendingAlerts();
 
@@ -129,7 +129,7 @@ class PriceAlertMonitorServiceImplTest {
     @DisplayName("AlertSubject: เพิ่ม observer ใหม่ได้โดยไม่แก้โค้ดเดิม (แจ้งครบทุกตัวในลิสต์)")
     void subjectNotifiesEveryObserver() {
         AlertObserver sms = mock(AlertObserver.class);
-        PriceAlert alert = pendingAbove(1L, "PTT", "1");
+        PriceAlert alert = pendingAbove(1L, "AAPL", "1");
         new AlertSubject(List.of(emailObserver, sms)).publish(alert, BigDecimal.TEN);
 
         verify(emailObserver).onAlertTriggered(alert, BigDecimal.TEN);
@@ -140,7 +140,7 @@ class PriceAlertMonitorServiceImplTest {
     @Test
     @DisplayName("alert ที่รอนานเกินกำหนด → PENDING → EXPIRED บันทึก และไม่แจ้งเตือน")
     void staleAlertExpires() {
-        PriceAlert alert = pendingAbove(1L, "PTT", "100");
+        PriceAlert alert = pendingAbove(1L, "AAPL", "100");
         alert.setCreatedAt(LocalDateTime.now().minusDays(120));
 
         monitor.checkAndNotify(alert, new BigDecimal("50"));

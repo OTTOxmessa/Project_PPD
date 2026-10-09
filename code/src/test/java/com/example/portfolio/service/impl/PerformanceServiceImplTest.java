@@ -33,17 +33,17 @@ class PerformanceServiceImplTest {
     @Test
     @DisplayName("คำขอถูกต้อง → ส่งต่อให้ template สร้างรายงาน")
     void delegatesToTemplate() {
-        PerformanceReport report = new PerformanceReport(1L, "SET", FROM, TO,
+        PerformanceReport report = new PerformanceReport(1L, "SPX", FROM, TO,
                 BigDecimal.TEN, BigDecimal.ONE, new BigDecimal("9"));
-        when(reportTemplate.generateReport(1L, "SET", FROM, TO)).thenReturn(report);
+        when(reportTemplate.generateReport(1L, "SPX", FROM, TO)).thenReturn(report);
 
-        assertThat(performanceService.compareWithBenchmark(1L, " SET ", FROM, TO)).isSameAs(report);
+        assertThat(performanceService.compareWithBenchmark(1L, " SPX ", FROM, TO)).isSameAs(report);
     }
 
     @Test
     @DisplayName("วันเริ่มอยู่หลังวันจบ → IllegalArgumentException (400) ไม่คำนวณ")
     void fromAfterTo() {
-        assertThatThrownBy(() -> performanceService.compareWithBenchmark(1L, "SET", TO, FROM))
+        assertThatThrownBy(() -> performanceService.compareWithBenchmark(1L, "SPX", TO, FROM))
                 .isInstanceOf(IllegalArgumentException.class);
         verifyNoInteractions(reportTemplate);
     }

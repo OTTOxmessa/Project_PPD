@@ -37,47 +37,63 @@ class AssetMaintenanceServiceImplTest {
     @InjectMocks
     private AssetMaintenanceServiceImpl service;
 
-    private static Asset ptt() {
-        return Asset.builder().id(1L).symbol("PTT").name("PTT").assetType(AssetType.STOCK).exchange("SET").build();
+    private static Asset aapl() {
+        return Asset.builder().id(1L).symbol("AAPL").name("Apple Inc.").assetType(AssetType.STOCK).exchange("US").build();
     }
 
     @Test
-    @DisplayName("update: แก้ชื่อ/ประเภท/ตลาดได้ (symbol ตัวพิมพ์เล็กถือว่าเป็นตัวเดิม)")
+    @DisplayName("update: แก้ชื่อ/ประเภทได้ ตลาด NASDAQ เก็บเป็น US (symbol ตัวพิมพ์เล็กถือว่าเป็นตัวเดิม)")
     void updateFields() {
-        Asset existing = ptt();
+        Asset existing = aapl();
         when(assetRepository.findById(1L)).thenReturn(Optional.of(existing));
         when(assetRepository.save(any(Asset.class))).thenAnswer(inv -> inv.getArgument(0));
-        Asset changes = Asset.builder().symbol(" ptt ").name("PTT Public Company")
-                .assetType(AssetType.ETF).exchange("SET100").build();
+        Asset changes = Asset.builder().symbol(" aapl ").name("Apple Incorporated")
+                .assetType(AssetType.ETF).exchange("NASDAQ").build();
 
         Asset saved = service.update(1L, changes);
 
-        assertThat(saved.getSymbol()).isEqualTo("PTT");
-        assertThat(saved.getName()).isEqualTo("PTT Public Company");
+        assertThat(saved.getSymbol()).isEqualTo("AAPL");
+        assertThat(saved.getName()).isEqualTo("Apple Incorporated");
         assertThat(saved.getAssetType()).isEqualTo(AssetType.ETF);
-        assertThat(saved.getExchange()).isEqualTo("SET100");
+        assertThat(saved.getExchange()).isEqualTo("US");
+    }
+
+    @Test
+    @DisplayName("update: เปลี่ยนเป็นตลาดอื่น (SET) หรือประเภทที่ไม่รองรับ (CRYPTO) → IllegalArgumentException (400) ไม่บันทึก")
+    void updateRejectsNonUsMarket() {
+        when(assetRepository.findById(1L)).thenReturn(Optional.of(aapl()));
+
+        assertThatThrownBy(() -> service.update(1L, Asset.builder().symbol("AAPL").name("x")
+                .assetType(AssetType.STOCK).exchange("SET").build()))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("SET");
+        assertThatThrownBy(() -> service.update(1L, Asset.builder().symbol("AAPL").name("x")
+                .assetType(AssetType.CRYPTO).build()))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("CRYPTO");
+        verify(assetRepository, never()).save(any());
     }
 
     @Test
     @DisplayName("update: เปลี่ยน symbol → IllegalStateException (409) ไม่บันทึก")
     void updateRejectsSymbolChange() {
-        when(assetRepository.findById(1L)).thenReturn(Optional.of(ptt()));
+        when(assetRepository.findById(1L)).thenReturn(Optional.of(aapl()));
 
-        assertThatThrownBy(() -> service.update(1L, Asset.builder().symbol("AOT").name("x").build()))
+        assertThatThrownBy(() -> service.update(1L, Asset.builder().symbol("MSFT").name("x").build()))
                 .isInstanceOf(IllegalStateException.class)
-                .hasMessageContaining("AOT");
+                .hasMessageContaining("MSFT");
         verify(assetRepository, never()).save(any());
     }
 
     @Test
     @DisplayName("delete: ยังมีพอร์ตถือหรือมีธุรกรรม → IllegalStateException (409) ไม่ลบอะไรเลย")
     void deleteInUse() {
-        when(assetRepository.findById(1L)).thenReturn(Optional.of(ptt()));
+        when(assetRepository.findById(1L)).thenReturn(Optional.of(aapl()));
         when(assetRepository.isInUse(1L)).thenReturn(true);
 
         assertThatThrownBy(() -> service.delete(1L))
                 .isInstanceOf(IllegalStateException.class)
-                .hasMessageContaining("PTT");
+                .hasMessageContaining("AAPL");
         verify(assetRepository, never()).delete(any());
         verify(assetRepository, never()).removeFromAllWatchlists(anyLong());
         verifyNoInteractions(priceHistoryRepository);
@@ -86,7 +102,7 @@ class AssetMaintenanceServiceImplTest {
     @Test
     @DisplayName("delete: ไม่มีใครใช้ → ลบราคาย้อนหลังและ watchlist ก่อน แล้วค่อยลบสินทรัพย์")
     void deleteUnused() {
-        Asset asset = ptt();
+        Asset asset = aapl();
         when(assetRepository.findById(1L)).thenReturn(Optional.of(asset));
         when(assetRepository.isInUse(1L)).thenReturn(false);
 

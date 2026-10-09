@@ -3,6 +3,7 @@ package com.example.portfolio.service.impl;
 import com.example.portfolio.domain.entity.Asset;
 import com.example.portfolio.repository.AssetRepository;
 import com.example.portfolio.service.SymbolSearchService;
+import com.example.portfolio.service.market.ExternalSymbolSearch;
 import com.example.portfolio.service.market.SymbolCatalog;
 import com.example.portfolio.service.market.SymbolInfo;
 import com.example.portfolio.service.market.SymbolMatcher;
@@ -24,6 +25,7 @@ public class SymbolSearchServiceImpl implements SymbolSearchService {
 
     private final AssetRepository assetRepository;
     private final SymbolCatalog symbolCatalog;
+    private final ExternalSymbolSearch externalSymbolSearch;
 
     private record Ranked(int rank, SymbolSuggestion suggestion) {
     }
@@ -36,7 +38,7 @@ public class SymbolSearchServiceImpl implements SymbolSearchService {
         }
 
         List<Ranked> ranked = new ArrayList<>();
-        Set<String> inSystem = new HashSet<>();
+        Set<String> seen = new HashSet<>();
 
         // 1) หุ้นที่อยู่ในระบบแล้ว (ตาราง assets มีขนาดเล็ก จึงกรองในหน่วยความจำได้)
         for (Asset a : assetRepository.findAll()) {
@@ -44,15 +46,14 @@ public class SymbolSearchServiceImpl implements SymbolSearchService {
             if (rank < SymbolMatcher.NO_MATCH) {
                 ranked.add(new Ranked(rank, new SymbolSuggestion(
                         a.getSymbol(), a.getName(), a.getAssetType(), a.getExchange(), a.getId())));
-                inSystem.add(a.getSymbol());
+                seen.add(a.getSymbol());
             }
         }
-        // 2) รายชื่ออ้างอิงที่ยังไม่อยู่ในระบบ
-        for (SymbolInfo s : symbolCatalog.search(q, limit * 2)) {
-            if (!inSystem.contains(s.symbol())) {
-                ranked.add(new Ranked(SymbolMatcher.rank(s.symbol(), s.name(), q),
-                        new SymbolSuggestion(s.symbol(), s.name(), s.assetType(), s.exchange(), null)));
-            }
+        // 2) รายชื่ออ้างอิง (S&P 500 + ETF) ที่ยังไม่อยู่ในระบบ
+        addSuggestions(ranked, seen, symbolCatalog.search(q, limit * 2), q);
+        // 3) ยังได้ไม่ครบ -> ค้นต่อจาก Yahoo Finance ให้เจอหุ้นทุกตัวในตลาดสหรัฐฯ (เช่น RKLB, EOSE)
+        if (ranked.size() < limit) {
+            addSuggestions(ranked, seen, externalSymbolSearch.search(q, limit), q);
         }
 
         return ranked.stream()
@@ -62,5 +63,15 @@ public class SymbolSearchServiceImpl implements SymbolSearchService {
                 .limit(limit)
                 .map(Ranked::suggestion)
                 .toList();
+    }
+
+    // เพิ่มรายการที่ยังไม่เคยเจอ (ไม่ซ้ำกับหุ้นในระบบหรือแหล่งก่อนหน้า) assetId เป็น null = ยังไม่อยู่ในระบบ
+    private static void addSuggestions(List<Ranked> ranked, Set<String> seen, List<SymbolInfo> found, String q) {
+        for (SymbolInfo s : found) {
+            if (seen.add(s.symbol())) {
+                ranked.add(new Ranked(SymbolMatcher.rank(s.symbol(), s.name(), q),
+                        new SymbolSuggestion(s.symbol(), s.name(), s.assetType(), s.exchange(), null)));
+            }
+        }
     }
 }

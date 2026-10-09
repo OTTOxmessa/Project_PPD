@@ -72,7 +72,7 @@ Constraints: `pk_user_profiles`, `uq_user_profiles_user_id`, `fk_user_profiles_u
 | `id` | BIGINT | N | PK | identity | รหัสพอร์ต |
 | `user_id` | BIGINT | N | FK → `users` | ON DELETE CASCADE | เจ้าของพอร์ต |
 | `name` | VARCHAR(100) | N | | — | ชื่อพอร์ต |
-| `base_currency` | VARCHAR(10) | N | | — | สกุลเงินหลักของพอร์ต เช่น `THB` |
+| `base_currency` | VARCHAR(10) | N | | — | สกุลเงินหลักของพอร์ต ตอนนี้ระบบรองรับเฉพาะ `USD` (ตรวจที่ API) |
 | `created_at` | TIMESTAMP(6) | N | | ตั้งโดย `@PrePersist` | วันที่สร้างพอร์ต |
 
 Constraints: `pk_portfolios`, `fk_portfolios_user_id` · Index: `idx_portfolios_user_id`
@@ -84,10 +84,10 @@ Constraints: `pk_portfolios`, `fk_portfolios_user_id` · Index: `idx_portfolios_
 | คอลัมน์ | ชนิด | Null | Key | Default / Check | คำอธิบาย |
 |---|---|---|---|---|---|
 | `id` | BIGINT | N | PK | identity | รหัสสินทรัพย์ |
-| `symbol` | VARCHAR(20) | N | UQ | — | ชื่อย่อ เช่น `PTT`, `AAPL` ห้ามซ้ำ |
+| `symbol` | VARCHAR(20) | N | UQ | — | ticker ตลาดสหรัฐฯ เช่น `AAPL`, `BRK.B` ห้ามซ้ำ |
 | `name` | VARCHAR(100) | N | | — | ชื่อเต็ม |
-| `asset_type` | VARCHAR(20) | N | | `STOCK`, `ETF`, `BOND`, `MUTUAL_FUND`, `CRYPTO`, `CASH` | ประเภทสินทรัพย์ |
-| `exchange` | VARCHAR(50) | Y | | — | ตลาดที่ซื้อขาย เช่น `SET`, `NASDAQ` |
+| `asset_type` | VARCHAR(20) | N | | `STOCK`, `ETF`, `BOND`, `MUTUAL_FUND`, `CRYPTO`, `CASH` | ประเภทสินทรัพย์ ตอนนี้ API รับเฉพาะ `STOCK` และ `ETF` ค่าอื่นเผื่อไว้สำหรับแนวทางพัฒนาต่อ |
+| `exchange` | VARCHAR(50) | Y | | — | ตลาดที่ซื้อขาย ระบบเก็บเป็น `US` (รับ NYSE / NASDAQ แล้วจัดรูปให้) |
 | `price_source` | VARCHAR(20) | Y | | `YAHOO`, `SYNTHETIC` | แหล่งราคา: ดึงจาก Yahoo Finance หรือสร้างจำลอง |
 
 Constraints: `pk_assets`, `uq_assets_symbol`, `ck_assets_type`, `ck_assets_price_source`
@@ -103,7 +103,7 @@ Constraints: `pk_assets`, `uq_assets_symbol`, `ck_assets_type`, `ck_assets_price
 | `id` | BIGINT | N | PK | identity | รหัส holding |
 | `portfolio_id` | BIGINT | N | FK → `portfolios`, UQ | ON DELETE CASCADE | พอร์ตที่ถือ |
 | `asset_id` | BIGINT | N | FK → `assets`, UQ | ON DELETE RESTRICT | สินทรัพย์ที่ถือ |
-| `quantity` | NUMERIC(18,6) | N | | `>= 0` | จำนวนหน่วยคงเหลือ (6 ตำแหน่งรองรับคริปโตเศษหน่วย) |
+| `quantity` | NUMERIC(18,6) | N | | `>= 0` | จำนวนหน่วยคงเหลือ (6 ตำแหน่ง เผื่อเศษหุ้นและคริปโตในอนาคต) |
 | `avg_cost` | NUMERIC(18,4) | N | | `>= 0` | ต้นทุนเฉลี่ยต่อหน่วย (ถัวเฉลี่ยเมื่อซื้อเพิ่ม) |
 | `updated_at` | TIMESTAMP(6) | N | | ตั้งโดย `@PrePersist/@PreUpdate` | อัปเดตล่าสุด |
 
@@ -144,12 +144,12 @@ Constraints: `pk_price_history`, `uq_price_history_asset_date` (asset_id, price_
 
 ## 8. `market_indices`
 
-ดัชนีตลาด เช่น SET Index ใช้เป็นเกณฑ์เทียบผลตอบแทนของพอร์ต
+ดัชนีตลาด ได้แก่ S&P 500 และ Dow Jones ใช้เป็นเกณฑ์เทียบผลตอบแทนของพอร์ต
 
 | คอลัมน์ | ชนิด | Null | Key | Default / Check | คำอธิบาย |
 |---|---|---|---|---|---|
 | `id` | BIGINT | N | PK | identity | รหัสดัชนี |
-| `index_code` | VARCHAR(20) | N | UQ | — | รหัสดัชนี เช่น `SET` |
+| `index_code` | VARCHAR(20) | N | UQ | — | รหัสดัชนี `SPX` (S&P 500) หรือ `DJI` (Dow Jones) |
 | `name` | VARCHAR(100) | N | | — | ชื่อดัชนี |
 
 Constraints: `pk_market_indices`, `uq_market_indices_code`
@@ -237,7 +237,7 @@ Constraints: `pk_user_watchlist` (user_id, asset_id), `fk_user_watchlist_user_id
 
 ทดสอบกับ PostgreSQL 16 ด้วย `schema.sql` + `data.sql` แล้ว:
 
-- ลบ asset `PTT` ที่ยังมี holding อยู่ ถูกปฏิเสธด้วย `fk_holdings_asset_id`
+- ลบ asset `AAPL` ที่ยังมี holding อยู่ ถูกปฏิเสธด้วย `fk_holdings_asset_id`
 - ลบผู้ใช้ demo แล้ว portfolios, holdings, transactions, user_profiles และ user_watchlist หายตามทั้งหมด แต่ assets ทั้ง 7 ตัวยังอยู่ครบ
 
 ## Cascade และ Fetch ฝั่ง JPA

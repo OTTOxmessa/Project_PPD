@@ -15,7 +15,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 class HoldingMapperTest {
 
     private static Holding holding(PriceSource source) {
-        Asset asset = Asset.builder().id(10L).symbol("PTT").name("PTT Public Company").priceSource(source).build();
+        Asset asset = Asset.builder().id(10L).symbol("AAPL").name("Apple Incorporated").priceSource(source).build();
         return Holding.builder().asset(asset)
                 .quantity(new BigDecimal("15"))
                 .avgCost(new BigDecimal("110"))

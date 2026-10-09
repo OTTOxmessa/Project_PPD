@@ -36,7 +36,7 @@
 
 | Pattern | ปัญหาที่แก้ | ไฟล์/คลาสที่ใช้ | Class Diagram |
 |---|---|---|---|
-| Adapter | Yahoo Finance ส่ง JSON รูปแบบของตัวเอง แต่ระบบต้องการ `PriceBar` และไม่อยากผูกกับผู้ให้บริการรายเดียว | `HistoricalPriceSource` ← `YahooFinancePriceSource`, `MarketDataProvider` ← `ExternalMarketDataAdapter` | [ดู](#d-adapter) |
+| Adapter | Yahoo Finance ส่ง JSON รูปแบบของตัวเอง แต่ระบบต้องการ `PriceBar` และไม่อยากผูกกับผู้ให้บริการรายเดียว | `HistoricalPriceSource` ← `YahooFinancePriceSource`, `ExternalSymbolSearch` ← `YahooSymbolSearch`, `MarketDataProvider` ← `ExternalMarketDataAdapter` | [ดู](#d-adapter) |
 
 ---
 

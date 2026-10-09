@@ -47,13 +47,13 @@ class PriceHistoryServiceImplTest {
 
     private PriceHistoryServiceImpl service;
 
-    private final MarketIndex set = MarketIndex.builder().id(1L).indexCode("SET").name("SET Index").build();
+    private final MarketIndex set = MarketIndex.builder().id(1L).indexCode("SPX").name("S&P 500").build();
 
     @BeforeEach
     void setUp() {
         service = new PriceHistoryServiceImpl(priceSource, fallback, priceHistoryRepository,
                 indexPriceHistoryRepository, assetRepository, transactionManager);
-        when(priceSource.resolveIndexTicker("SET")).thenReturn(Optional.of("^SET.BK"));
+        when(priceSource.resolveIndexTicker("SPX")).thenReturn(Optional.of("^GSPC"));
     }
 
     private static List<PriceBar> bars(int days) {
@@ -67,7 +67,7 @@ class PriceHistoryServiceImplTest {
     @DisplayName("Yahoo ส่งดัชนีมาแค่ 1 วัน → ไม่ลบประวัติเดิม และคืน false ให้ใช้ข้อมูลเดิม")
     void keepsExistingHistoryWhenTooShort() {
         when(priceSource.name()).thenReturn("Yahoo Finance");
-        when(priceSource.fetchDailyHistory("^SET.BK")).thenReturn(bars(1));
+        when(priceSource.fetchDailyHistory("^GSPC")).thenReturn(bars(1));
 
         assertThat(service.importRealIndexHistory(set)).isFalse();
         verify(indexPriceHistoryRepository, never()).purgeByMarketIndexId(anyLong());
@@ -78,7 +78,7 @@ class PriceHistoryServiceImplTest {
     @DisplayName("ได้ข้อมูลครบตามเกณฑ์ → แทนที่ประวัติเดิมด้วยข้อมูลจริง")
     void replacesHistoryWhenLongEnough() {
         when(priceSource.name()).thenReturn("Yahoo Finance");
-        when(priceSource.fetchDailyHistory("^SET.BK"))
+        when(priceSource.fetchDailyHistory("^GSPC"))
                 .thenReturn(bars(PriceHistoryServiceImpl.MIN_INDEX_HISTORY_DAYS));
 
         assertThat(service.importRealIndexHistory(set)).isTrue();
@@ -89,7 +89,7 @@ class PriceHistoryServiceImplTest {
     @Test
     @DisplayName("ดึงข้อมูลไม่ได้เลย → คืน false และไม่แตะฐานข้อมูล")
     void emptyResponse() {
-        when(priceSource.fetchDailyHistory("^SET.BK")).thenReturn(List.of());
+        when(priceSource.fetchDailyHistory("^GSPC")).thenReturn(List.of());
 
         assertThat(service.importRealIndexHistory(set)).isFalse();
         verify(indexPriceHistoryRepository, never()).purgeByMarketIndexId(anyLong());

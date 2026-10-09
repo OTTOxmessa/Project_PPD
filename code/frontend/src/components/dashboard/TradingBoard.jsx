@@ -112,7 +112,7 @@ function TradingBoard({ assetId, onSelectAsset, watchlistIds, onWatchlistChanged
   return (
     <div className="panel board">
       <div className="board-search">
-        <SymbolSearch onSelect={handleSearchSelect} placeholder="ค้นหาหุ้นเพื่อเปิดกราฟ เช่น MSFT, NVDA, PTT" />
+        <SymbolSearch onSelect={handleSearchSelect} placeholder="ค้นหาหุ้นเพื่อเปิดกราฟ เช่น MSFT, NVDA, VOO" />
       </div>
 
       {!assetId ? (

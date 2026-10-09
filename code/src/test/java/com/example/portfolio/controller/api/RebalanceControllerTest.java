@@ -64,7 +64,7 @@ class RebalanceControllerTest {
     @DisplayName("GET /portfolios/{id}/rebalance-plan?method=calendar → 200 รายการคำสั่งซื้อขาย")
     void plan() throws Exception {
         when(rebalanceService.preview(5L, "calendar")).thenReturn(List.of(
-                new TradeOrder(1L, "PTT", TransactionType.SELL, new BigDecimal("10"), new BigDecimal("34"))));
+                new TradeOrder(1L, "AAPL", TransactionType.SELL, new BigDecimal("10"), new BigDecimal("34"))));
 
         mockMvc.perform(get("/api/v1/portfolios/5/rebalance-plan").param("method", "calendar"))
                 .andExpect(status().isOk())

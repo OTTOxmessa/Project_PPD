@@ -11,7 +11,6 @@ function PortfolioSidebar() {
   const [error, setError] = useState(null)
   const [showForm, setShowForm] = useState(false)
   const [name, setName] = useState('')
-  const [baseCurrency, setBaseCurrency] = useState('THB')
   const [creating, setCreating] = useState(false)
 
   const load = async () => {
@@ -35,7 +34,8 @@ function PortfolioSidebar() {
     setCreating(true)
     setError(null)
     try {
-      const res = await apiClient.post('/portfolios', { name, baseCurrency })
+      // ระบบรองรับเฉพาะหุ้นสหรัฐฯ พอร์ตทุกพอร์ตจึงเป็น USD
+      const res = await apiClient.post('/portfolios', { name, baseCurrency: 'USD' })
       navigate(`/portfolios/${res.data.id}`)
     } catch (err) {
       setError(apiError(err, 'สร้างพอร์ตไม่สำเร็จ'))
@@ -43,7 +43,7 @@ function PortfolioSidebar() {
     }
   }
 
-  // รวมมูลค่าแยกตามสกุลเงิน (ไม่รวม THB กับ USD เข้าด้วยกัน)
+  // รวมมูลค่าแยกตามสกุลเงิน (ตอนนี้มีแค่ USD แต่เผื่อพอร์ตสกุลอื่นในอนาคต จะไม่ถูกบวกปนกัน)
   const totalsByCurrency = portfolios.reduce((acc, p) => {
     const t = acc[p.baseCurrency] || { value: 0, gain: 0 }
     t.value += Number(p.marketValue)
@@ -74,10 +74,7 @@ function PortfolioSidebar() {
       {showForm && (
         <form className="mini-form" onSubmit={handleCreate}>
           <input value={name} onChange={(e) => setName(e.target.value)} placeholder="ชื่อพอร์ต" required />
-          <select value={baseCurrency} onChange={(e) => setBaseCurrency(e.target.value)}>
-            <option value="THB">THB</option>
-            <option value="USD">USD</option>
-          </select>
+          <span className="muted small" title="ระบบรองรับเฉพาะหุ้นและ ETF ตลาดสหรัฐฯ">USD</span>
           <button type="submit" className="btn btn-primary btn-sm" disabled={creating}>
             {creating ? '...' : 'สร้าง'}
           </button>
