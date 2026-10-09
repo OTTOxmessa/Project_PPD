@@ -3,6 +3,7 @@ package com.example.portfolio.service.impl;
 import com.example.portfolio.domain.entity.Asset;
 import com.example.portfolio.domain.entity.Holding;
 import com.example.portfolio.domain.entity.Portfolio;
+import com.example.portfolio.domain.entity.Transaction;
 import com.example.portfolio.domain.enums.TransactionType;
 import com.example.portfolio.repository.AssetRepository;
 import com.example.portfolio.repository.HoldingRepository;
@@ -17,6 +18,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -130,5 +132,51 @@ class HoldingServiceImplTest {
         when(holdingRepository.findByPortfolioId(1L)).thenReturn(List.of(open, soldOut));
 
         assertThat(holdingService.getOpenPositions(1L)).containsExactly(open);
+    }
+
+    private static Transaction tx(TransactionType type, String qty, String price, int day) {
+        return Transaction.builder().type(type).quantity(new BigDecimal(qty)).price(new BigDecimal(price))
+                .executedAt(LocalDateTime.of(2026, 1, day, 12, 0)).build();
+    }
+
+    @Test
+    @DisplayName("recalculate: เริ่มจาก 0 แล้วไล่ประวัติใหม่ — ซื้อ 100@10, ซื้อ 100@20, ขาย 50 → 150 หุ้น ต้นทุน 15")
+    void recalculateFromHistory() {
+        when(holdingRepository.findByPortfolioIdAndAssetId(1L, 10L)).thenReturn(Optional.of(holding("999", "1")));
+        saveReturnsArgument();
+
+        Holding result = holdingService.recalculate(1L, 10L, List.of(
+                tx(TransactionType.BUY, "100", "10", 1),
+                tx(TransactionType.BUY, "100", "20", 2),
+                tx(TransactionType.DIVIDEND, "1", "3", 3),
+                tx(TransactionType.SELL, "50", "30", 4)));
+
+        assertThat(result.getQuantity()).isEqualByComparingTo("150");
+        assertThat(result.getAvgCost()).isEqualByComparingTo("15");
+    }
+
+    @Test
+    @DisplayName("recalculate: ไม่มีรายการเหลือ → จำนวน 0 ต้นทุน 0 (หายจากรายการที่ถืออยู่)")
+    void recalculateEmptyHistory() {
+        when(holdingRepository.findByPortfolioIdAndAssetId(1L, 10L)).thenReturn(Optional.of(holding("10", "50")));
+        saveReturnsArgument();
+
+        Holding result = holdingService.recalculate(1L, 10L, List.of());
+
+        assertThat(result.getQuantity()).isEqualByComparingTo("0");
+        assertThat(result.getAvgCost()).isEqualByComparingTo("0");
+    }
+
+    @Test
+    @DisplayName("recalculate: มีจุดที่ขายเกินจำนวนที่ถือ ณ วันนั้น → IllegalStateException (409) บอกวันที่ และไม่บันทึก")
+    void recalculateRejectsOversell() {
+        when(holdingRepository.findByPortfolioIdAndAssetId(1L, 10L)).thenReturn(Optional.of(holding("10", "50")));
+
+        assertThatThrownBy(() -> holdingService.recalculate(1L, 10L, List.of(
+                tx(TransactionType.BUY, "10", "50", 1),
+                tx(TransactionType.SELL, "20", "60", 5))))
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessageContaining("2026-01-05");
+        verify(holdingRepository, never()).save(any());
     }
 }
