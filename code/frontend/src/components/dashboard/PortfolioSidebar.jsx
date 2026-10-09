@@ -1,10 +1,12 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import apiClient from '../../api/client.js'
-import { apiError, formatNumber, formatPercent } from '../../utils/format.js'
+import { apiError, formatPercent } from '../../utils/format.js'
+import { useCurrency } from '../../context/CurrencyContext.jsx'
 
 // คอลัมน์ซ้าย: พอร์ตหุ้นทั้งหมด พร้อมมูลค่าและกำไร/ขาดทุน
 function PortfolioSidebar() {
+  const { currency: shownCurrency, money } = useCurrency()
   const navigate = useNavigate()
   const [portfolios, setPortfolios] = useState([])
   const [loading, setLoading] = useState(true)
@@ -63,10 +65,10 @@ function PortfolioSidebar() {
 
       {Object.entries(totalsByCurrency).map(([currency, t]) => (
         <div key={currency} className="total-row">
-          <span className="muted">มูลค่ารวม ({currency})</span>
-          <strong>{formatNumber(t.value)}</strong>
+          <span className="muted">มูลค่ารวม ({shownCurrency})</span>
+          <strong>{money(t.value)}</strong>
           <span className={t.gain >= 0 ? 'text-green' : 'text-red'}>
-            {t.gain >= 0 ? '+' : ''}{formatNumber(t.gain)}
+            {t.gain >= 0 ? '+' : ''}{money(t.gain)}
           </span>
         </div>
       ))}
@@ -101,12 +103,12 @@ function PortfolioSidebar() {
                 </div>
                 <div className="portfolio-card-bottom">
                   <div>
-                    <div className="muted small">มูลค่า ({p.baseCurrency})</div>
-                    <div className="portfolio-card-value">{formatNumber(p.marketValue)}</div>
+                    <div className="muted small">มูลค่า ({shownCurrency})</div>
+                    <div className="portfolio-card-value">{money(p.marketValue)}</div>
                   </div>
                   <div className={`portfolio-card-gain ${positive ? 'text-green' : 'text-red'}`}>
                     <div>({formatPercent(p.gainPercent)})</div>
-                    <div>{positive ? '+' : ''}{formatNumber(p.gain)}</div>
+                    <div>{positive ? '+' : ''}{money(p.gain)}</div>
                   </div>
                 </div>
                 <div className="muted small">{p.holdingsCount} สินทรัพย์</div>
