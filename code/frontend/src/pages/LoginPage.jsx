@@ -49,7 +49,6 @@ function LoginPage() {
         <p className="muted">
           ยังไม่มีบัญชี? <Link to="/register">สมัครสมาชิก</Link>
         </p>
-        <p className="hint">บัญชีทดลอง: demo@portfolio.com / demo1234</p>
       </form>
     </div>
   )
