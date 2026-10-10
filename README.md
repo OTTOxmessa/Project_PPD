@@ -156,8 +156,8 @@ erDiagram
 ### ขั้นตอน
 ```bash
 # 1. Clone repository
-git clone [กรอก URL ของ repository]
-cd portfolio-system
+git clone https://github.com/OTTOxmessa/Project_PPD.git
+cd Project_PPD
 
 # 2. เปิดฐานข้อมูล PostgreSQL
 cd code
@@ -291,7 +291,7 @@ mvn test
 
 ผลการทดสอบ (Surefire report) อยู่ที่ `code/target/surefire-reports/` และสรุปรายงานการทดสอบอยู่ที่ [`test/test-report/`](test/test-report/)
 
-[กรอก จำนวน test และผลการทดสอบล่าสุด]
+Tests run: 257, Failures: 0, Errors: 0, Skipped: 0
 
 ---
 
@@ -299,9 +299,9 @@ mvn test
 
 | ส่วน | URL |
 |---|---|
-| Frontend | [กรอก] |
-| Backend API | [กรอก] |
-| Swagger UI | [กรอก]/swagger-ui.html |
+| Frontend | https://portfoliomanagement-4qrc.onrender.com/ |
+| Backend API | https://portfoliomanagement-4qrc.onrender.com/api/v1 |
+| Swagger UI | https://portfoliomanagement-4qrc.onrender.com/swagger-ui.html |
 
 ---
 
