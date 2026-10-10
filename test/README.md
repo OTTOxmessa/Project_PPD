@@ -42,10 +42,10 @@ mvn surefire-report:report
 | คลาสทดสอบ | สิ่งที่ทดสอบ | จำนวน |
 |---|---|---|
 | `PortfolioServiceImplTest` | CRUD พอร์ต, ผูกเจ้าของและตั้งสกุลเงินเป็น USD ตอนสร้าง, ผู้ใช้อื่นเข้าถึง/ลบพอร์ตไม่ได้, ส่ง Pageable ต่อ | 7 |
-| `HoldingServiceImplTest` | ซื้อครั้งแรก, ถัวเฉลี่ยต้นทุน (100@10 + 100@20 = 200@15), ขายแล้วต้นทุนไม่เปลี่ยน, ขายเกินจำนวน, ซ่อนตัวที่ขายหมด | 6 |
-| `TransactionServiceImplTest` | บันทึกพร้อมอัปเดต holding, วันที่ย้อนหลัง, DIVIDEND ไม่แตะ holding, ขายเกินแล้วไม่บันทึก | 5 |
+| `HoldingServiceImplTest` | ซื้อครั้งแรก, ถัวเฉลี่ยต้นทุน (100@10 + 100@20 = 200@15), ขายแล้วต้นทุนไม่เปลี่ยน, ขายเกินจำนวน, ซ่อนตัวที่ขายหมด, คำนวณใหม่จากประวัติหลังแก้/ลบ (ข้ามปันผล, ไม่มีรายการเหลือ → 0, ขายเกิน ณ วันใดวันหนึ่ง → 409 พร้อมวันที่) | 9 |
+| `TransactionServiceImplTest` | บันทึกพร้อมอัปเดต holding, วันที่ย้อนหลัง, DIVIDEND ไม่แตะ holding, ขายเกินแล้วไม่บันทึก, แก้รายการ (คงเวลาเดิมถ้าวันเดิม / เปลี่ยนวันที่) แล้วคำนวณ holding ใหม่, แก้รายการของพอร์ตอื่นไม่ได้, ลบแล้วคำนวณ holding ใหม่ | 9 |
 | `AuthServiceImplTest` | เก็บรหัสผ่านแบบ hash, username/email ซ้ำ, login ถูก/ผิด, ไม่พบอีเมลตอบเหมือนรหัสผิด | 6 |
-| `AllocationServiceImplTest` | คำนวณ drift (จริง − เป้า), เลือก Strategy จากชื่อ, ชื่อที่ไม่รู้จัก → 400, สินทรัพย์ไม่มีเป้า, upsert เป้าหมาย | 7 |
+| `AllocationServiceImplTest` | คำนวณ drift (จริง − เป้า), เลือก Strategy จากชื่อ, ชื่อที่ไม่รู้จัก → 400, สินทรัพย์ไม่มีเป้า, upsert เป้าหมาย, ตั้งหลายตัวพร้อมกัน (ย้ายสัดส่วน 60/40 → 40/60), รวมเกิน 100% → 400 ไม่บันทึกเลย, ตั้งทีละตัวนับเป้าของตัวอื่น (รวมตัวที่ขายหมดแล้ว) | 10 |
 | `PriceAlertServiceImplTest` | สร้าง alert (บังคับ PENDING), สินทรัพย์ไม่มีอยู่, ดู/ลบ alert ของพอร์ตอื่นไม่ได้, แก้ได้เฉพาะ PENDING | 7 |
 | `AssetMaintenanceServiceImplTest` | แก้ชื่อ/ประเภท/ตลาด (NASDAQ เก็บเป็น US), ห้ามเปลี่ยนเป็นตลาดอื่นหรือคริปโต, ห้ามเปลี่ยน symbol, ห้ามลบสินทรัพย์ที่ยังถูกใช้, ลบราคาย้อนหลัง+watchlist ก่อนลบสินทรัพย์ | 6 |
 | `AssetServiceImplTest` | เพิ่มหุ้นสหรัฐฯ (ตลาดเก็บเป็น US), ปฏิเสธหุ้นตลาด SET และคริปโต, สร้างจากรายชื่ออ้างอิง, ไม่สร้างซ้ำ | 5 |
@@ -84,10 +84,11 @@ mvn surefire-report:report
 | คลาสทดสอบ | Status code ที่ทดสอบ | จำนวน |
 |---|---|---|
 | `PortfolioControllerTest` | 200, 201, 204, 400 (validation, สกุลเงินไม่ใช่ USD, JSON ผิดรูปแบบ, id ไม่ใช่ตัวเลข), 404, 500 และ pagination/sorting `?page=1&size=5&sort=name,asc` | 12 |
-| `TransactionControllerTest` | 201, 400 (จำนวน 0, วันที่อนาคต), 404 (พอร์ตคนอื่น), 409 (ขายเกิน) | 6 |
+| `TransactionControllerTest` | 201, 400 (จำนวน 0, วันที่อนาคต), 404 (พอร์ตคนอื่น), 409 (ขายเกิน); แก้ไข `PUT` 200 / 400 / 409, ลบ `DELETE` 204 / 404 | 13 |
 | `AuthControllerTest` | 201, 200, 400 (อีเมล/รหัสผ่านผิดรูปแบบ), 401 (รหัสผ่านผิด), 409 (อีเมลซ้ำ) | 5 |
 | `AssetControllerTest` | CRUD สินทรัพย์: 200, 201, 204, 400 (ไม่ระบุประเภท), 404 (พร้อม `path`), 409 (symbol ซ้ำ, เปลี่ยน symbol, ลบตัวที่ยังถูกใช้, constraint ฐานข้อมูล), `PUT /assets/by-symbol/{symbol}` | 11 |
 | `PriceAlertControllerTest` | CRUD alert: 200, 201, 204, 400 (ราคาเป้า 0), 404 (พอร์ตคนอื่น), 409 (แก้ alert ที่แจ้งเตือนแล้ว) | 8 |
+| `AllocationControllerTest` | `PUT /allocation/targets/bulk` 200, รวมเกิน 100% → 400, รายการว่าง/ตัวเดียวเกิน 100% → 400 | 3 |
 | `RebalanceControllerTest` | `GET /rebalance-plan` 200, `POST /rebalances` 201, method ไม่รู้จัก 400, `GET /rebalances` แบ่งหน้าเรียงล่าสุดก่อน | 4 |
 | `ExchangeRateControllerTest` | 200 พร้อมอัตรา USD/THB, 503 เมื่อยังดึงอัตราไม่ได้ | 2 |
 
@@ -104,4 +105,4 @@ mvn surefire-report:report
 |---|---|---|
 | `PortfolioSystemApplicationTests` | Spring context โหลดได้ครบ (ต้องเปิด PostgreSQL) | 1 |
 
-**รวม 202 test cases**
+**รวม 220 test cases**

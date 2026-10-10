@@ -3,6 +3,7 @@ package com.example.portfolio.service.impl;
 import com.example.portfolio.domain.entity.Asset;
 import com.example.portfolio.domain.entity.Holding;
 import com.example.portfolio.domain.entity.Portfolio;
+import com.example.portfolio.domain.entity.Transaction;
 import com.example.portfolio.domain.enums.TransactionType;
 import com.example.portfolio.exception.ResourceNotFoundException;
 import com.example.portfolio.repository.AssetRepository;
@@ -57,6 +58,28 @@ public class HoldingServiceImpl implements HoldingService {
         Holding holding = holdingRepository.findByPortfolioIdAndAssetId(portfolioId, assetId)
                 .orElseGet(() -> createEmptyHolding(portfolioId, assetId));
         rule.apply(holding, quantity, price);
+        return holdingRepository.save(holding);
+    }
+
+    @Override
+    @Transactional
+    public Holding recalculate(Long portfolioId, Long assetId, List<Transaction> history) {
+        Holding holding = holdingRepository.findByPortfolioIdAndAssetId(portfolioId, assetId)
+                .orElseGet(() -> createEmptyHolding(portfolioId, assetId));
+        holding.setQuantity(BigDecimal.ZERO);
+        holding.setAvgCost(BigDecimal.ZERO);
+        for (Transaction transaction : history) {
+            HoldingUpdateRule rule = rules.get(transaction.getType());
+            if (rule == null) {
+                continue; // ปันผล/ฝาก/ถอน ไม่กระทบจำนวนหน่วย
+            }
+            try {
+                rule.apply(holding, transaction.getQuantity(), transaction.getPrice());
+            } catch (IllegalStateException oversold) {
+                throw new IllegalStateException("แก้ไขไม่ได้: รายการวันที่ " + transaction.getExecutedAt().toLocalDate()
+                        + " จะกลายเป็นขายเกินจำนวนที่ถืออยู่ ณ ตอนนั้น");
+            }
+        }
         return holdingRepository.save(holding);
     }
 

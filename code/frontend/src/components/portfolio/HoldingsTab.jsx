@@ -1,9 +1,10 @@
 import { useCallback, useEffect, useState } from 'react'
 import apiClient from '../../api/client.js'
 import { ensureAsset } from '../../api/assets.js'
-import { apiError, formatDateTime, formatNumber, formatPercent, today } from '../../utils/format.js'
+import { apiError, formatNumber, formatPercent, today } from '../../utils/format.js'
 import { useCurrency } from '../../context/CurrencyContext.jsx'
 import SymbolSearch from '../SymbolSearch.jsx'
+import TransactionHistory from './TransactionHistory.jsx'
 import '../../source-tag.css'
 
 const EMPTY_FORM = { type: 'BUY', quantity: '', price: '', executedAt: '' }
@@ -20,8 +21,9 @@ function HoldingsTab({ portfolioId, onAssetsChanged }) {
   const [saving, setSaving] = useState(false)
   const [searchKey, setSearchKey] = useState(0)
 
-  const load = useCallback(async () => {
-    setLoading(true)
+  // silent = โหลดใหม่โดยไม่ซ่อนตาราง (หลังแก้/ลบในประวัติ) ตารางประวัติจะได้อยู่ในโหมดแก้ไขต่อ
+  const load = useCallback(async (silent = false) => {
+    if (!silent) setLoading(true)
     try {
       const [h, t] = await Promise.all([
         apiClient.get(`/portfolios/${portfolioId}/holdings`),
@@ -192,35 +194,7 @@ function HoldingsTab({ portfolioId, onAssetsChanged }) {
             )}
           </div>
 
-          <div className="card table-wrap">
-            <h2>ประวัติรายการ</h2>
-            {transactions.length === 0 ? (
-              <p className="empty-state">ยังไม่มีรายการ</p>
-            ) : (
-              <table className="data-table">
-                <thead>
-                  <tr>
-                    <th>วันที่</th>
-                    <th>หุ้น</th>
-                    <th>ประเภท</th>
-                    <th className="num">จำนวน</th>
-                    <th className="num">ราคา</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {transactions.map((t) => (
-                    <tr key={t.id}>
-                      <td>{formatDateTime(t.executedAt)}</td>
-                      <td>{t.symbol}</td>
-                      <td><span className={`badge ${t.type === 'BUY' ? 'badge-green' : 'badge-red'}`}>{t.type}</span></td>
-                      <td className="num">{formatNumber(t.quantity, 4)}</td>
-                      <td className="num">{money(t.price)}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            )}
-          </div>
+          <TransactionHistory portfolioId={portfolioId} transactions={transactions} onChanged={() => load(true)} />
         </>
       )}
     </div>
