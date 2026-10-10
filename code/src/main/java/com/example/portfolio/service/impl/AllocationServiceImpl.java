@@ -35,6 +35,9 @@ public class AllocationServiceImpl implements AllocationService {
     private final AssetRepository assetRepository;
     private final StrategyRegistry<AllocationStrategy> strategies;
 
+    // ยอมให้เกินได้เล็กน้อยจากการปัดเศษ เช่น 33.33 + 33.33 + 33.34 (เกณฑ์เดียวกับ TargetSumValidationHandler)
+    private static final BigDecimal MAX_TOTAL_PERCENT = new BigDecimal("100.01");
+
     // Spring ฉีด AllocationStrategy ทุกตัวที่เป็น @Component มาเป็น List
     public AllocationServiceImpl(HoldingRepository holdingRepository,
                                  AllocationTargetRepository allocationTargetRepository,
@@ -87,6 +90,33 @@ public class AllocationServiceImpl implements AllocationService {
     @Override
     @Transactional
     public AllocationTarget upsertTarget(Long portfolioId, Long assetId, BigDecimal targetPercent) {
+        return upsertTargets(portfolioId, Map.of(assetId, targetPercent)).get(0);
+    }
+
+    @Override
+    @Transactional
+    public List<AllocationTarget> upsertTargets(Long portfolioId, Map<Long, BigDecimal> targetPercents) {
+        requireTotalWithinLimit(portfolioId, targetPercents);
+        List<AllocationTarget> saved = new ArrayList<>();
+        targetPercents.forEach((assetId, percent) -> saved.add(saveTarget(portfolioId, assetId, percent)));
+        return saved;
+    }
+
+    // ผลรวม = เป้าเดิมของทุกสินทรัพย์ในพอร์ต (รวมตัวที่ขายหมดแล้ว แบบเดียวกับที่ตรวจตอนรีบาลานซ์) แทนที่ด้วยค่าใหม่
+    private void requireTotalWithinLimit(Long portfolioId, Map<Long, BigDecimal> targetPercents) {
+        Map<Long, BigDecimal> merged = new HashMap<>();
+        for (AllocationTarget t : allocationTargetRepository.findByPortfolioId(portfolioId)) {
+            merged.put(t.getAsset().getId(), t.getTargetPercent());
+        }
+        merged.putAll(targetPercents);
+        BigDecimal total = merged.values().stream().reduce(BigDecimal.ZERO, BigDecimal::add);
+        if (total.compareTo(MAX_TOTAL_PERCENT) > 0) {
+            throw new IllegalArgumentException("สัดส่วนเป้าหมายรวมกันต้องไม่เกิน 100% (ถ้าบันทึกจะรวมเป็น "
+                    + total.stripTrailingZeros().toPlainString() + "%)");
+        }
+    }
+
+    private AllocationTarget saveTarget(Long portfolioId, Long assetId, BigDecimal targetPercent) {
         AllocationTarget target = allocationTargetRepository.findByPortfolioIdAndAssetId(portfolioId, assetId)
                 .orElseGet(() -> {
                     Portfolio portfolio = portfolioRepository.findById(portfolioId)

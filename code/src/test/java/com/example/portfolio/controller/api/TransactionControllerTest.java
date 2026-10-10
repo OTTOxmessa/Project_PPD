@@ -29,8 +29,10 @@ import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -162,5 +164,61 @@ class TransactionControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.length()").value(2))
                 .andExpect(jsonPath("$[1].type").value("SELL"));
+    }
+
+    @Test
+    @DisplayName("PUT /transactions/{id} → 200 พร้อมรายการที่แก้แล้ว (วันที่แปลงเป็นเที่ยงวัน)")
+    void update() throws Exception {
+        when(transactionService.update(eq(5L), eq(100L), eq(TransactionType.SELL), any(), any(), any()))
+                .thenReturn(saved(TransactionType.SELL));
+
+        mockMvc.perform(put(URL + "/100").contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"type\":\"SELL\",\"quantity\":100,\"price\":35.5,\"executedAt\":\"2026-10-06\"}"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value(100))
+                .andExpect(jsonPath("$.type").value("SELL"));
+
+        verify(transactionService).update(5L, 100L, TransactionType.SELL, new BigDecimal("100"), new BigDecimal("35.5"),
+                LocalDateTime.of(2026, 10, 6, 12, 0));
+    }
+
+    @Test
+    @DisplayName("PUT จำนวน 0 → 400 และไม่แก้")
+    void updateValidation() throws Exception {
+        mockMvc.perform(put(URL + "/100").contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"type\":\"BUY\",\"quantity\":0,\"price\":10}"))
+                .andExpect(status().isBadRequest());
+
+        verifyNoInteractions(transactionService);
+    }
+
+    @Test
+    @DisplayName("PUT แก้แล้วขายเกินจำนวนที่ถือ → 409")
+    void updateConflict() throws Exception {
+        when(transactionService.update(anyLong(), anyLong(), any(), any(), any(), any()))
+                .thenThrow(new IllegalStateException("แก้ไขไม่ได้: รายการวันที่ 2026-10-06 จะกลายเป็นขายเกินจำนวนที่ถืออยู่ ณ ตอนนั้น"));
+
+        mockMvc.perform(put(URL + "/100").contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"type\":\"BUY\",\"quantity\":1,\"price\":10}"))
+                .andExpect(status().isConflict());
+    }
+
+    @Test
+    @DisplayName("DELETE /transactions/{id} → 204")
+    void deleteTransaction() throws Exception {
+        mockMvc.perform(delete(URL + "/100"))
+                .andExpect(status().isNoContent());
+
+        verify(transactionService).delete(5L, 100L);
+    }
+
+    @Test
+    @DisplayName("DELETE รายการที่ไม่มีในพอร์ตนี้ → 404")
+    void deleteNotFound() throws Exception {
+        org.mockito.Mockito.doThrow(new ResourceNotFoundException("Transaction not found: 999"))
+                .when(transactionService).delete(5L, 999L);
+
+        mockMvc.perform(delete(URL + "/999"))
+                .andExpect(status().isNotFound());
     }
 }

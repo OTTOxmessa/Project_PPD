@@ -654,6 +654,37 @@
   font-weight: 600;
 }
 
+.btn-text {
+  background: none;
+  border: none;
+  color: var(--accent);
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.btn-text:disabled,
+.btn-text-danger:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.row-actions {
+  white-space: nowrap;
+  text-align: right;
+}
+
+.row-actions > * + * {
+  margin-left: 0.5rem;
+}
+
+.input-date {
+  padding: 0.3rem 0.4rem;
+  background-color: var(--panel-2);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  color: var(--text);
+}
+
 .tabs {
   display: flex;
   flex-wrap: wrap;

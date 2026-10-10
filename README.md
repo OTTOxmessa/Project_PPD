@@ -10,13 +10,13 @@
 
 ## สมาชิกกลุ่ม
 
-| ลำดับ | ชื่อ-นามสกุล | รหัสนักศึกษา | Section | Branch | 
-|:---:|---|---|:---:|---|
-| 1 | นายรัฐภูมิ แฝงฤทธิ์หลง | 653308373-7 | 4 | `Ratthaphum_6533803737_04` | 
-| 2 | นางสาวชุตินันท์ หมายสุข | 673380401-6 | 4 | `Chutinan_6733804016_04` | 
-| 3 | นายธนพัฒน์ พิมจำปา |673380404-0| 4 | `Thanaphat_6733804040_04` | 
-| 4 | นางสาวภัทราพร ศรีชนะ | 673380419-7 | 4 | `Phattaraporn_6733804197_04` | 
-| 5 | นายกิตติพัฒน์ สีราช | 673380393-9  | 4 | `kittipat_6733803939_04` | 
+| ลำดับ | ชื่อ-นามสกุล | รหัสนักศึกษา | Section | Branch | หน้าที่ |
+|:---:|---|---|:---:|---|---|
+| 1 | นายรัฐภูมิ แฝงฤทธิ์หลง | 653308373-7 | 4 | `Ratthaphum_6533803737_04` | Tech lead |
+| 2 | นางสาวชุตินันท์ หมายสุข | 673380401-6 | 4 | `Chutinan_6733804016_04` | Transactions |
+| 3 | นายธนพัฒน์ พิมจำปา |673380404-0| 4 | `Thanaphat_6733804040_04` | DevOps |
+| 4 | นางสาวภัทราพร ศรีชนะ | 673380419-7 | 4 | `Phattaraporn_6733804197_04` | Frontend |
+| 5 | นายกิตติพัฒน์ สีราช | 673380393-9  | 4 | `kittipat_6733803939_04` | Testing / QA |
 
 
 ---
@@ -31,7 +31,7 @@
 | 3. Price Alert | ตั้งแจ้งเตือนเมื่อราคาสูง/ต่ำกว่าเป้า ระบบตรวจอัตโนมัติเป็นระยะ |
 | 4. Benchmark Comparison | เปรียบเทียบผลตอบแทนของพอร์ตกับดัชนี S&P 500 หรือ Dow Jones ในช่วงเวลาที่เลือก |
 | 5. Rebalancing | คำนวณแผนซื้อ-ขาย (Threshold / Calendar) ดูตัวอย่างก่อนยืนยัน และบันทึกประวัติ |
-| อื่น ๆ | สมัครสมาชิก/เข้าสู่ระบบ (JWT), ค้นหาหุ้นแบบ Auto-complete จากรายชื่อ S&P 500 + ETF 69 ตัว (572 รายการ) ถ้าไม่พบค้นต่อจาก Yahoo Finance ให้เจอหุ้นทุกตัวในตลาดสหรัฐฯ, เพิ่มหุ้นจากหน้าพอร์ตได้ทันที, สลับแสดงมูลค่าเป็นเงินบาท (USD/THB) จาก navbar |
+| อื่น ๆ | สมัครสมาชิก/เข้าสู่ระบบ (JWT), ค้นหาหุ้นแบบ Auto-complete จากรายชื่อ S&P 500 + ETF 69 ตัว (572 รายการ) ถ้าไม่พบค้นต่อจาก Yahoo Finance ให้เจอหุ้นทุกตัวในตลาดสหรัฐฯ, เพิ่มหุ้นจากหน้าพอร์ตได้ทันที, สลับแสดงมูลค่าเป็นเงินบาท (USD/THB) จาก navbar, แก้ไข/ลบรายการซื้อขายย้อนหลัง (คำนวณจำนวนหุ้นและต้นทุนเฉลี่ยใหม่ให้อัตโนมัติ) |
 
 ---
 
@@ -156,8 +156,8 @@ erDiagram
 ### ขั้นตอน
 ```bash
 # 1. Clone repository
-git clone [กรอก URL ของ repository]
-cd portfolio-system
+git clone https://github.com/OTTOxmessa/Project_PPD.git
+cd Project_PPD
 
 # 2. เปิดฐานข้อมูล PostgreSQL
 cd code
@@ -228,8 +228,10 @@ Swagger UI (เมื่อ backend รันอยู่): **http://localhost:8
 | GET | `/api/v1/portfolios/summary` | มูลค่า/กำไรของทุกพอร์ต | 200 |
 | GET | `/api/v1/portfolios/{id}/holdings` | สินทรัพย์ที่ถือพร้อมมูลค่าตลาด | 200, 404 |
 | GET · POST | `/api/v1/portfolios/{id}/transactions` | ประวัติ / บันทึกการซื้อ-ขาย | 200, 201, 400, 404, 409 (ขายเกิน) |
+| PUT · DELETE | `/api/v1/portfolios/{id}/transactions/{transactionId}` | แก้ / ลบรายการย้อนหลัง แล้วคำนวณจำนวนหุ้นและต้นทุนเฉลี่ยใหม่จากประวัติทั้งหมด | 200, 204, 400, 404, 409 (แก้/ลบแล้วจะขายเกินจำนวนที่ถือ ณ วันใดวันหนึ่ง) |
 | GET | `/api/v1/portfolios/{id}/allocation?method=target\|equal\|risk` | สัดส่วนปัจจุบัน vs เป้าหมาย | 200, 400, 404 |
-| GET · PUT | `/api/v1/portfolios/{id}/allocation/targets` | ดู / กำหนดสัดส่วนเป้าหมาย | 200, 400, 404 |
+| GET · PUT | `/api/v1/portfolios/{id}/allocation/targets` | ดู / กำหนดสัดส่วนเป้าหมาย (ทีละตัว) | 200, 400 (รวมกันเกิน 100%), 404 |
+| PUT | `/api/v1/portfolios/{id}/allocation/targets/bulk` | กำหนดเป้าหมายหลายตัวพร้อมกัน ตรวจผลรวมทั้งชุดไม่เกิน 100% | 200, 400 (รวมกันเกิน 100%), 404 |
 | GET · POST | `/api/v1/portfolios/{id}/alerts` | รายการ / สร้างแจ้งเตือนราคา | 200, 201, 400, 404 |
 | GET · PUT · DELETE | `/api/v1/portfolios/{id}/alerts/{alertId}` | ดู / แก้ / ลบแจ้งเตือน (แก้ได้เฉพาะสถานะ PENDING) | 200, 204, 400, 404, 409 |
 | GET | `/api/v1/portfolios/{id}/performance?benchmark=SPX|DJI&from=&to=` | เปรียบเทียบผลตอบแทนกับตลาด | 200, 400, 404 |
@@ -289,7 +291,7 @@ mvn test
 
 ผลการทดสอบ (Surefire report) อยู่ที่ `code/target/surefire-reports/` และสรุปรายงานการทดสอบอยู่ที่ [`test/test-report/`](test/test-report/)
 
-[กรอก จำนวน test และผลการทดสอบล่าสุด]
+Tests run: 257, Failures: 0, Errors: 0, Skipped: 0
 
 ---
 
@@ -297,9 +299,9 @@ mvn test
 
 | ส่วน | URL |
 |---|---|
-| Frontend | [กรอก] |
-| Backend API | [กรอก] |
-| Swagger UI | [กรอก]/swagger-ui.html |
+| Frontend | https://portfoliomanagement-4qrc.onrender.com/ |
+| Backend API | https://portfoliomanagement-4qrc.onrender.com/api/v1 |
+| Swagger UI | https://portfoliomanagement-4qrc.onrender.com/swagger-ui.html |
 
 ---
 
