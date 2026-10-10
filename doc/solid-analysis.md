@@ -27,7 +27,7 @@
 |---|---|---|---|
 | [`TransactionRequest.java`](../code/src/main/java/com/example/portfolio/dto/request/TransactionRequest.java#L14) | 14 | `@NotNull`, `@DecimalMin`, `@PastOrPresent` | **Validation** — ตรวจรูปแบบข้อมูลที่ DTO ด้วย Bean Validation ก่อนเข้าระบบ |
 | [`TransactionServiceImpl.java`](../code/src/main/java/com/example/portfolio/service/impl/TransactionServiceImpl.java#L40) | 40 | `record(...)` บันทึกธุรกรรม + สั่งปรับ holding ใน transaction เดียว | **Business** — กฎทางธุรกิจอยู่ที่ service เท่านั้น |
-| [`TransactionRepository.java`](../code/src/main/java/com/example/portfolio/repository/TransactionRepository.java#L11) | 11 | Spring Data JPA interface | **Persistence** — อ่าน/เขียนฐานข้อมูลที่ repository เท่านั้น |
+| [`TransactionRepository.java`](../code/src/main/java/com/example/portfolio/repository/TransactionRepository.java#L12) | 12 | Spring Data JPA interface | **Persistence** — อ่าน/เขียนฐานข้อมูลที่ repository เท่านั้น |
 | [`TransactionMapper.java`](../code/src/main/java/com/example/portfolio/mapper/TransactionMapper.java#L11) | 11 | แปลง Entity เป็น Response DTO | **Mapping** — แยกจาก controller และ service |
 | [`GlobalExceptionHandler.java`](../code/src/main/java/com/example/portfolio/exception/GlobalExceptionHandler.java#L28) | 28 | แปลง exception เป็น ErrorResponse | **Error handling** — จุดเดียวของทั้งระบบ controller ไม่ต้อง try/catch เอง |
 
@@ -39,6 +39,8 @@
 | [`PortfolioValuationServiceImpl.java`](../code/src/main/java/com/example/portfolio/service/impl/PortfolioValuationServiceImpl.java#L29) | 29 | คำนวณมูลค่าตลาด ต้นทุน กำไรของแต่ละพอร์ต | เปลี่ยนสูตรมูลค่าได้โดยไม่กระทบ CRUD |
 | [`AssetServiceImpl.java`](../code/src/main/java/com/example/portfolio/service/impl/AssetServiceImpl.java#L26) | 26 | จัดการข้อมูลสินทรัพย์ (สร้าง/หา/ราคาย้อนหลัง) | ไม่มีโค้ดค้นหา/จัดอันดับปนอยู่แล้ว |
 | [`SymbolSearchServiceImpl.java`](../code/src/main/java/com/example/portfolio/service/impl/SymbolSearchServiceImpl.java#L34) | 34 | ค้นหาและจัดอันดับหุ้นสำหรับ auto-complete | แยกออกจาก `AssetServiceImpl` เพราะเปลี่ยนด้วยเหตุผลต่างกัน (กติกาการค้นหา) |
+| [`ExchangeRateServiceImpl.java`](../code/src/main/java/com/example/portfolio/service/impl/ExchangeRateServiceImpl.java#L20) | 20 | ดึงและจำอัตรา USD/THB อย่างเดียว | การแปลงสกุลเงินเพื่อแสดงผลเป็นคนละเรื่องกับการคำนวณมูลค่าพอร์ต จึงไม่ปนอยู่ใน `PortfolioValuationServiceImpl` |
+| [`YahooSymbolSearch.java`](../code/src/main/java/com/example/portfolio/service/market/YahooSymbolSearch.java#L28) | 28 | เรียก API ค้นหาของ Yahoo แล้วแปลงผลอย่างเดียว | การจัดอันดับผลค้นหาอยู่ใน `SymbolSearchServiceImpl` ส่วนการคุยกับระบบภายนอกอยู่ที่นี่ |
 | [`PriceAlertServiceImpl.java`](../code/src/main/java/com/example/portfolio/service/impl/PriceAlertServiceImpl.java#L21) | 21 | สร้าง/ดู/ลบ alert ที่ผู้ใช้ตั้ง | แยกจากการตรวจราคา |
 | [`PriceAlertMonitorServiceImpl.java`](../code/src/main/java/com/example/portfolio/service/impl/PriceAlertMonitorServiceImpl.java#L63) | 63 | ตรวจราคาเทียบ alert ทุกตัวแล้วเปลี่ยนสถานะ | งานเบื้องหลังของ scheduler เป็นคนละหน้าที่กับ CRUD |
 | [`PriceHistoryServiceImpl.java`](../code/src/main/java/com/example/portfolio/service/impl/PriceHistoryServiceImpl.java#L71) | 71 | นำเข้าราคาของสินทรัพย์หนึ่งตัว (จริงหรือสำรอง) | ไม่ต้องรู้เรื่องการวนทั้งระบบหรือการเว้นจังหวะ |
@@ -56,13 +58,14 @@
 | ไฟล์ | บรรทัด | สิ่งที่เห็นในโค้ด | เหตุผล |
 |---|---|---|---|
 | [`StrategyRegistry.java`](../code/src/main/java/com/example/portfolio/common/StrategyRegistry.java#L30) | 30 | หา Strategy จากชื่อ (`?method=pivot`) | ใช้ร่วมกัน 3 ฟีเจอร์ แทน switch ใน controller เดิม |
-| [`AllocationServiceImpl.java`](../code/src/main/java/com/example/portfolio/service/impl/AllocationServiceImpl.java#L55) | 55 | เลือก `AllocationStrategy` จากชื่อ | เพิ่มวิธีคำนวณสัดส่วนใหม่ = เพิ่มคลาส `@Component` ที่มี `key()` ใหม่ |
+| [`AllocationServiceImpl.java`](../code/src/main/java/com/example/portfolio/service/impl/AllocationServiceImpl.java#L58) | 58 | เลือก `AllocationStrategy` จากชื่อ | เพิ่มวิธีคำนวณสัดส่วนใหม่ = เพิ่มคลาส `@Component` ที่มี `key()` ใหม่ |
 | [`RiskBasedAllocationStrategy.java`](../code/src/main/java/com/example/portfolio/service/allocation/RiskBasedAllocationStrategy.java#L20) | 20 | `key()` = "risk" | ตัวอย่าง Strategy ที่เพิ่มได้โดยไม่แก้ service |
 | [`SupportResistanceServiceImpl.java`](../code/src/main/java/com/example/portfolio/service/impl/SupportResistanceServiceImpl.java#L29) | 29 | เลือกสูตรแนวรับ-แนวต้าน (pivot / ma) | เพิ่มสูตรใหม่ เช่น Fibonacci = เพิ่มหนึ่งคลาส |
 | [`RebalanceServiceImpl.java`](../code/src/main/java/com/example/portfolio/service/impl/RebalanceServiceImpl.java#L76) | 76 | เลือกวิธีรีบาลานซ์ (threshold / calendar) | ไม่ต้องแก้ service เมื่อมีวิธีใหม่ |
 | [`PendingState.java`](../code/src/main/java/com/example/portfolio/service/alert/state/PendingState.java#L41) | 41 | เลือก `AlertConditionEvaluator` ตามเงื่อนไขของ alert | แทน `switch (condition)` เดิม — เพิ่มเงื่อนไขใหม่ = เพิ่ม evaluator หนึ่งคลาส |
 | [`PriceAlertMonitorServiceImpl.java`](../code/src/main/java/com/example/portfolio/service/impl/PriceAlertMonitorServiceImpl.java#L45) | 45 | เลือก `AlertState` ตามสถานะปัจจุบัน | แทน `if (status == PENDING) ... if (status == TRIGGERED)` เดิม |
-| [`HoldingServiceImpl.java`](../code/src/main/java/com/example/portfolio/service/impl/HoldingServiceImpl.java#L53) | 53 | เลือก `HoldingUpdateRule` ตามประเภทธุรกรรม | แทน `switch (type)` เดิม — ซื้อ/ขายอยู่คนละคลาส |
+| [`HoldingServiceImpl.java`](../code/src/main/java/com/example/portfolio/service/impl/HoldingServiceImpl.java#L54) | 54 | เลือก `HoldingUpdateRule` ตามประเภทธุรกรรม | แทน `switch (type)` เดิม — ซื้อ/ขายอยู่คนละคลาส |
+| [`HoldingServiceImpl.java`](../code/src/main/java/com/example/portfolio/service/impl/HoldingServiceImpl.java#L72) | 72 | `recalculate` ใช้ `HoldingUpdateRule` ชุดเดิมตอนแก้/ลบรายการย้อนหลัง | ฟีเจอร์ใหม่ใช้ rule เดิมซ้ำ ไม่ต้องแก้ rule หรือเขียนสูตรถัวเฉลี่ยใหม่ |
 | [`TransactionType.java`](../code/src/main/java/com/example/portfolio/domain/enums/TransactionType.java#L29) | 29 | แต่ละประเภทรู้ผลต่อจำนวนหน่วยของตัวเอง (+1 / −1 / 0) | ใช้แทน switch ใน `BenchmarkComparisonService` และ if ใน `TransactionServiceImpl` |
 | [`BenchmarkComparisonService.java`](../code/src/main/java/com/example/portfolio/service/performance/BenchmarkComparisonService.java#L44) | 44 | `t.getType().signedQuantity(...)` | ไม่ต้องไล่เช็คประเภทธุรกรรม |
 | [`TransactionServiceImpl.java`](../code/src/main/java/com/example/portfolio/service/impl/TransactionServiceImpl.java#L48) | 48 | `type.affectsHolding()` | แทน `if (type == BUY || type == SELL)` เดิม |
@@ -77,13 +80,14 @@
 
 | ไฟล์ | บรรทัด | สิ่งที่เห็นในโค้ด | เหตุผล |
 |---|---|---|---|
-| [`AllocationServiceImpl.java`](../code/src/main/java/com/example/portfolio/service/impl/AllocationServiceImpl.java#L65) | 65 | เรียกผ่าน `AllocationStrategy` เท่านั้น | 3 implementation (target / equal / risk) สลับกันได้ ผลลัพธ์อยู่ในรูปเดียวกันเสมอ |
+| [`AllocationServiceImpl.java`](../code/src/main/java/com/example/portfolio/service/impl/AllocationServiceImpl.java#L68) | 68 | เรียกผ่าน `AllocationStrategy` เท่านั้น | 3 implementation (target / equal / risk) สลับกันได้ ผลลัพธ์อยู่ในรูปเดียวกันเสมอ |
 | [`PriceAlertMonitorServiceImpl.java`](../code/src/main/java/com/example/portfolio/service/impl/PriceAlertMonitorServiceImpl.java#L48) | 48 | เรียก `AlertState.handle()` โดยไม่รู้ว่าเป็นสถานะไหน | `AlertState` เหลือแค่ 2 เมธอดที่ทุกสถานะใช้จริง — เดิม `isConditionMet()` ไม่มีความหมายใน Triggered/Expired จึงตัดออก |
 | [`ExpiredState.java`](../code/src/main/java/com/example/portfolio/service/alert/state/ExpiredState.java#L20) | 20 | สถานะสุดท้าย ไม่ทำอะไร แต่ไม่ throw | ผู้เรียกใช้แทนสถานะอื่นได้โดยไม่พัง |
 | [`BenchmarkComparisonService.java`](../code/src/main/java/com/example/portfolio/service/performance/BenchmarkComparisonService.java#L25) | 25 | subclass ของ template | `PerformanceServiceImpl` ใช้ผ่านชนิด `PerformanceReportTemplate` ได้เลย |
 | [`PerformanceServiceImpl.java`](../code/src/main/java/com/example/portfolio/service/impl/PerformanceServiceImpl.java#L17) | 17 | ขึ้นกับ abstract class | ใส่ subclass ไหนก็ได้ |
 | [`PriceHistoryMarketDataProvider.java`](../code/src/main/java/com/example/portfolio/service/market/PriceHistoryMarketDataProvider.java#L21) | 21 | ราคาจากฐานข้อมูล (`@Primary`) | สลับกับ `ExternalMarketDataAdapter` ได้โดย scheduler/service ไม่ต้องแก้ |
 | [`ExternalMarketDataAdapter.java`](../code/src/main/java/com/example/portfolio/service/market/adapter/ExternalMarketDataAdapter.java#L15) | 15 | ราคาจาก API ภายนอก | ทำสัญญาเดียวกันครบ |
+| [`YahooSymbolSearch.java`](../code/src/main/java/com/example/portfolio/service/market/YahooSymbolSearch.java#L53) | 53 | Yahoo ใช้ไม่ได้ → คืน list ว่าง ไม่ throw | ทำตามสัญญาของ `ExternalSymbolSearch` ครบ ผู้เรียกไม่ต้องดักจับ exception เอง |
 | [`MinimumHoldingsValidationHandler.java`](../code/src/main/java/com/example/portfolio/service/rebalance/MinimumHoldingsValidationHandler.java#L10) | 10 | handler ในสายตรวจสอบ | ต่อแทนกันได้ทุกตำแหน่งในสาย |
 | [`AlertCondition.java`](../code/src/main/java/com/example/portfolio/domain/enums/AlertCondition.java#L7) | 7 | เหลือเฉพาะเงื่อนไขที่ทำงานได้จริง | เดิม `PCT_CHANGE` คืน false เสมอ (สัญญาว่าทำได้แต่ทำไม่ได้) จึงเอาออก |
 
@@ -107,16 +111,19 @@ Interface ของ service ทุกตัวมีไม่เกิน 5 เ�
 | [`AlertPublisher.java`](../code/src/main/java/com/example/portfolio/service/alert/AlertPublisher.java#L10) | 10 | เมธอดเดียว | `TriggeredState` ต้องการแค่ "ประกาศ" |
 | [`RebalanceCommand.java`](../code/src/main/java/com/example/portfolio/service/rebalance/RebalanceCommand.java#L6) | 6 | เมธอดเดียว | Command ทุกตัวทำสัญญาเดียวกัน |
 | [`TokenProvider.java`](../code/src/main/java/com/example/portfolio/security/TokenProvider.java#L4) | 4 | 3 เมธอดที่ระบบใช้จริงกับ token | ไม่เปิดรายละเอียดของ JWT |
+| [`ExternalSymbolSearch.java`](../code/src/main/java/com/example/portfolio/service/market/ExternalSymbolSearch.java#L9) | 9 | เมธอดเดียว `search(query, limit)` | `SymbolSearchServiceImpl` ต้องการแค่ค้นหา ไม่ต้องรู้เรื่อง HTTP หรือ cache |
+| [`ExchangeRateService.java`](../code/src/main/java/com/example/portfolio/service/ExchangeRateService.java#L12) | 12 | เมธอดเดียว `usdToThb()` | `ExchangeRateController` เห็นเฉพาะสิ่งที่ใช้ |
 
 ### ขนาดของ Service interface ทุกตัว
 
 | Interface | จำนวนเมธอด |
 |---|---|
-| `AllocationService` | 3 |
+| `AllocationService` | 4 |
 | `AssetMaintenanceService` | 2 |
 | `AssetService` | 5 |
 | `AuthService` | 2 |
-| `HoldingService` | 2 |
+| `ExchangeRateService` | 1 |
+| `HoldingService` | 3 |
 | `MarketDataRefreshService` | 1 |
 | `PerformanceService` | 1 |
 | `PortfolioService` | 5 |
@@ -128,7 +135,7 @@ Interface ของ service ทุกตัวมีไม่เกิน 5 เ�
 | `RebalanceService` | 3 |
 | `SupportResistanceService` | 1 |
 | `SymbolSearchService` | 1 |
-| `TransactionService` | 2 |
+| `TransactionService` | 4 |
 | `WatchlistService` | 3 |
 
 ## D — Dependency Inversion Principle
@@ -140,7 +147,7 @@ Service ขึ้นกับ interface ไม่ใช่คลาสตัว�
 | ไฟล์ | บรรทัด | สิ่งที่เห็นในโค้ด | เหตุผล |
 |---|---|---|---|
 | [`PortfolioController.java`](../code/src/main/java/com/example/portfolio/controller/api/PortfolioController.java#L24) | 24 | Lombok สร้าง constructor จาก field `final` | dependency เปลี่ยนไม่ได้หลังสร้าง และทดสอบด้วย `new` ได้ทันที |
-| [`AllocationServiceImpl.java`](../code/src/main/java/com/example/portfolio/service/impl/AllocationServiceImpl.java#L39) | 39 | constructor รับ repository + `List<AllocationStrategy>` | ไม่มี field injection |
+| [`AllocationServiceImpl.java`](../code/src/main/java/com/example/portfolio/service/impl/AllocationServiceImpl.java#L42) | 42 | constructor รับ repository + `List<AllocationStrategy>` | ไม่มี field injection |
 | [`JwtUtil.java`](../code/src/main/java/com/example/portfolio/security/JwtUtil.java#L21) | 21 | ค่าตั้งค่ารับผ่าน constructor parameter | เดิมใช้ `@Value` บน field — ตอนนี้ secret ผิดจะรู้ตั้งแต่ start |
 | [`YahooFinancePriceSource.java`](../code/src/main/java/com/example/portfolio/service/market/YahooFinancePriceSource.java#L46) | 46 | `range` รับผ่าน constructor | เดิมใช้ `@Value` บน field |
 | [`ExternalMarketDataAdapter.java`](../code/src/main/java/com/example/portfolio/service/market/adapter/ExternalMarketDataAdapter.java#L21) | 21 | URL และ API key รับผ่าน constructor | เดิมใช้ `@Value` บน field |
@@ -150,7 +157,7 @@ Service ขึ้นกับ interface ไม่ใช่คลาสตัว�
 
 | ไฟล์ | บรรทัด | สิ่งที่เห็นในโค้ด | เหตุผล |
 |---|---|---|---|
-| [`AllocationController.java`](../code/src/main/java/com/example/portfolio/controller/api/AllocationController.java#L24) | 24 | controller ขึ้นกับ service interface | ไม่รู้จัก `AllocationServiceImpl` หรือคลาส Strategy ตัวจริง |
+| [`AllocationController.java`](../code/src/main/java/com/example/portfolio/controller/api/AllocationController.java#L28) | 28 | controller ขึ้นกับ service interface | ไม่รู้จัก `AllocationServiceImpl` หรือคลาส Strategy ตัวจริง |
 | [`TransactionServiceImpl.java`](../code/src/main/java/com/example/portfolio/service/impl/TransactionServiceImpl.java#L31) | 31 | service ขึ้นกับ service อื่นผ่าน interface | เปลี่ยน implementation ได้โดยไม่แก้ผู้เรียก |
 | [`AuthServiceImpl.java`](../code/src/main/java/com/example/portfolio/service/impl/AuthServiceImpl.java#L20) | 20 | ออก token ผ่าน `TokenProvider` | เปลี่ยนจาก JWT เป็นแบบอื่นได้โดยไม่แก้ service |
 | [`JwtAuthenticationFilter.java`](../code/src/main/java/com/example/portfolio/security/JwtAuthenticationFilter.java#L22) | 22 | filter ก็ขึ้นกับ interface เดียวกัน | ไม่ผูกกับ `JwtUtil` |
@@ -159,6 +166,8 @@ Service ขึ้นกับ interface ไม่ใช่คลาสตัว�
 | [`PriceHistoryServiceImpl.java`](../code/src/main/java/com/example/portfolio/service/impl/PriceHistoryServiceImpl.java#L36) | 36 | ทางสำรองผ่าน interface | ไม่ผูกกับตัวสร้างข้อมูลจำลอง |
 | [`AssetServiceImpl.java`](../code/src/main/java/com/example/portfolio/service/impl/AssetServiceImpl.java#L30) | 30 | รายชื่อหุ้นอ้างอิงผ่าน interface | วันหน้าเปลี่ยนเป็น API ได้ |
 | [`PriceAlertMonitorServiceImpl.java`](../code/src/main/java/com/example/portfolio/service/impl/PriceAlertMonitorServiceImpl.java#L28) | 28 | ราคาล่าสุดผ่าน interface | สลับ `@Primary` ได้โดยไม่แก้ service |
+| [`SymbolSearchServiceImpl.java`](../code/src/main/java/com/example/portfolio/service/impl/SymbolSearchServiceImpl.java#L28) | 28 | ค้นหาภายนอกผ่าน `ExternalSymbolSearch` | เปลี่ยนจาก Yahoo เป็นเจ้าอื่นได้ และ test ใส่ mock แทนได้ |
+| [`ExchangeRateServiceImpl.java`](../code/src/main/java/com/example/portfolio/service/impl/ExchangeRateServiceImpl.java#L24) | 24 | ดึงอัตราผ่าน `HistoricalPriceSource` interface เดียวกับราคาหุ้น | ใช้ Adapter เดิมซ้ำ ไม่ผูกกับ Yahoo |
 | [`SecurityConfig.java`](../code/src/main/java/com/example/portfolio/config/SecurityConfig.java#L21) | 21 | จุดประกอบระบบ (composition root) | `config/` เป็นที่เดียวที่รู้จักคลาสตัวจริงเพื่อต่อสายเข้าด้วยกัน — ยกเว้นในกฎของ test |
 
 ทุกคลาสใน `service/impl/` implement interface ใน `service/` (ตรวจด้วย `everyServiceImplementsAnInterface`)
@@ -171,5 +180,5 @@ Service ขึ้นกับ interface ไม่ใช่คลาสตัว�
 | O | `switch`/`if` ตามประเภท 7 จุด และ controller เลือก Strategy เอง | `StrategyRegistry`, `AlertConditionEvaluator`, `HoldingUpdateRule`, ตาราง State/Command, พฤติกรรมใน `TransactionType` |
 | L | `PCT_CHANGE` คืน false เสมอ, `isConditionMet()` ไม่มีความหมายในบางสถานะ | ตัดออกทั้งคู่ ทุก implementation ทำสัญญาได้ครบ |
 | I | `AssetService` / `PriceAlertService` / `PriceHistoryService` มีเมธอดที่ผู้เรียกแต่ละรายไม่ใช้ | แยกเป็น interface ตามผู้ใช้ ทุกตัวไม่เกิน 5 เมธอด |
-| D | `@Value` บน field 3 คลาส, ขึ้นกับ `JwtUtil` / `AlertSubject` / `SymbolDirectory` / `SyntheticPriceHistoryGenerator` ตรง ๆ | constructor injection ทั้งหมด และขึ้นกับ `TokenProvider` / `AlertPublisher` / `SymbolCatalog` / `PriceHistoryFallback` |
+| D | `@Value` บน field 3 คลาส, ขึ้นกับ `JwtUtil` / `AlertSubject` / `SymbolDirectory` / `SyntheticPriceHistoryGenerator` ตรง ๆ | constructor injection ทั้งหมด และขึ้นกับ `TokenProvider` / `AlertPublisher` / `SymbolCatalog` / `PriceHistoryFallback` และส่วนที่เพิ่มทีหลังก็ทำแบบเดียวกัน (`ExternalSymbolSearch`, `HistoricalPriceSource` ใน `ExchangeRateServiceImpl`) |
 

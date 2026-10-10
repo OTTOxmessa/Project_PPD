@@ -134,7 +134,7 @@ erDiagram
 
 | หัวข้อ | สรุป |
 |---|---|
-| Constraints | ตั้งชื่อทุกตัว `pk_` / `fk_` / `uq_` / `ck_` — FK 15 ตัว, UNIQUE 9 ตัว, CHECK 19 ตัว (ค่า enum, จำนวน/ราคา > 0, เป้าหมาย 0–100%) |
+| Constraints | ตั้งชื่อทุกตัว `pk_` / `fk_` / `uq_` / `ck_` — FK 15 ตัว, UNIQUE 9 ตัว, CHECK 17 ตัว (ค่า enum, จำนวน/ราคา > 0, เป้าหมาย 0–100%) |
 | ON DELETE | **CASCADE** สำหรับข้อมูลที่เป็นของผู้ใช้/พอร์ต (ลบพอร์ตแล้วธุรกรรม, holding, alert หายตาม) · **RESTRICT** ห้ามลบ asset ที่ยังถูกถือหรือมีประวัติธุรกรรม |
 | Fetch | `@ManyToOne` ทุกตัวเป็น `LAZY` (กัน N+1) · `@OneToMany`/`@OneToOne` ฝั่งแม่ใช้ `cascade = ALL, orphanRemoval = true` · `@ManyToMany` watchlist ไม่ cascade |
 | Index | 10 index สำหรับ FK และ query ที่ใช้บ่อย เช่น `(portfolio_id, executed_at)` สำหรับประวัติธุรกรรม, `status` สำหรับ scheduler ตรวจ alert |
@@ -142,6 +142,24 @@ erDiagram
 
 - ER Diagram แบบละเอียด (ทุกคอลัมน์ พร้อม PK/FK/UK): [`doc/diagrams/er-diagram.md`](doc/diagrams/er-diagram.md) · ภาพ [`er-diagram.png`](doc/diagrams/er-diagram.png)
 - Data Dictionary ฉบับเต็ม (ชนิดข้อมูล, constraint, index และเหตุผลของ cascade/fetch): [`doc/data-dictionary.md`](doc/data-dictionary.md)
+
+---
+
+## Diagrams
+
+คำอธิบายของทุกไดอะแกรมอยู่ที่ [`doc/diagrams/diagram_des.md`](doc/diagrams/diagram_des.md)
+
+| ไดอะแกรม | ไฟล์ |
+|---|---|
+| ER Diagram | [`er-diagram.png`](doc/diagrams/er-diagram.png) · [`er-diagram.md`](doc/diagrams/er-diagram.md) |
+| Use Case Diagram | [`01-use-case_.drawio.png`](doc/diagrams/01-use-case_.drawio.png) |
+| Domain Model | [`02-domain-model__.png`](doc/diagrams/02-domain-model__.png) |
+| Sequence: บันทึกซื้อหุ้น | [`03-sequence-buy.drawio.png`](doc/diagrams/03-sequence-buy.drawio.png) |
+| Sequence: ตรวจแจ้งเตือนอัตโนมัติ | [`04-sequence-alert.drawio.png`](doc/diagrams/04-sequence-alert.drawio.png) |
+| Sequence: ยืนยันรีบาลานซ์ | [`05-sequence-rebalance.drawio.png`](doc/diagrams/05-sequence-rebalance.drawio.png) |
+| Component Diagram | [`07-component.drawio.png`](doc/diagrams/07-component.drawio.png) |
+| Deployment Diagram | [`08-deployment.drawio.png`](doc/diagrams/08-deployment.drawio.png) |
+| Class Diagram ของแต่ละ Design Pattern และ State Diagram ของ Price Alert | [`doc/design-patterns.md`](doc/design-patterns.md) |
 
 ---
 
@@ -184,7 +202,7 @@ npm install
 ```bash
 # Terminal 1 — Backend (http://localhost:8080)
 cd code
-mvn clean spring-boot:run        # หรือ mvnw.cmd clean spring-boot:run บน Windows
+./mvnw clean spring-boot:run     # Windows CMD: mvnw.cmd clean spring-boot:run
 
 # Terminal 2 — Frontend (http://localhost:5173)
 cd code/frontend
@@ -234,7 +252,7 @@ Swagger UI (เมื่อ backend รันอยู่): **http://localhost:8
 | PUT | `/api/v1/portfolios/{id}/allocation/targets/bulk` | กำหนดเป้าหมายหลายตัวพร้อมกัน ตรวจผลรวมทั้งชุดไม่เกิน 100% | 200, 400 (รวมกันเกิน 100%), 404 |
 | GET · POST | `/api/v1/portfolios/{id}/alerts` | รายการ / สร้างแจ้งเตือนราคา | 200, 201, 400, 404 |
 | GET · PUT · DELETE | `/api/v1/portfolios/{id}/alerts/{alertId}` | ดู / แก้ / ลบแจ้งเตือน (แก้ได้เฉพาะสถานะ PENDING) | 200, 204, 400, 404, 409 |
-| GET | `/api/v1/portfolios/{id}/performance?benchmark=SPX|DJI&from=&to=` | เปรียบเทียบผลตอบแทนกับตลาด | 200, 400, 404 |
+| GET | `/api/v1/portfolios/{id}/performance?benchmark=SPX\|DJI&from=&to=` | เปรียบเทียบผลตอบแทนกับตลาด | 200, 400, 404 |
 | GET | `/api/v1/portfolios/{id}/rebalance-plan?method=threshold\|calendar` | ดูแผนรีบาลานซ์ (ยังไม่ซื้อขายจริง) | 200, 400, 404 |
 | POST | `/api/v1/portfolios/{id}/rebalances?method=` | รีบาลานซ์จริง สร้าง RebalanceLog ใหม่ | 201, 400, 404, 409 (พอร์ตยังไม่พร้อม) |
 | GET | `/api/v1/portfolios/{id}/rebalances?page=&size=&sort=triggeredAt,desc` | ประวัติรีบาลานซ์ (**Pagination & Sorting**) | 200, 404 |
@@ -286,8 +304,11 @@ Swagger UI (เมื่อ backend รันอยู่): **http://localhost:8
 
 ```bash
 cd code
-mvn test
+docker compose up -d     # ต้องเปิด PostgreSQL ก่อน เพราะ contextLoads() ใช้ฐานข้อมูลจริง
+./mvnw test              # Windows CMD: mvnw.cmd test
 ```
+
+เทสต์อื่นทั้งหมดใช้ mock ไม่ต้องมีฐานข้อมูลหรืออินเทอร์เน็ต มีแค่ `PortfolioSystemApplicationTests.contextLoads()` ที่ต้องมี PostgreSQL ทำงานอยู่
 
 ผลการทดสอบ (Surefire report) อยู่ที่ `code/target/surefire-reports/` และสรุปรายงานการทดสอบอยู่ที่ [`test/test-report/`](test/test-report/)
 
@@ -302,6 +323,42 @@ Tests run: 257, Failures: 0, Errors: 0, Skipped: 0
 | Frontend | https://portfoliomanagement-4qrc.onrender.com/ |
 | Backend API | https://portfoliomanagement-4qrc.onrender.com/api/v1 |
 | Swagger UI | https://portfoliomanagement-4qrc.onrender.com/swagger-ui.html |
+
+---
+
+## Screenshots
+
+### หน้าจอระบบ
+
+<table>
+<tr><td width="50%" valign="top"><img src="img/01-login.png" alt="หน้าเข้าสู่ระบบ"><br><sub>หน้าเข้าสู่ระบบ</sub></td><td width="50%" valign="top"><img src="img/02-register.png" alt="หน้าสมัครสมาชิก"><br><sub>หน้าสมัครสมาชิก</sub></td></tr>
+<tr><td width="50%" valign="top"><img src="img/03-dashboard.png" alt="หน้าหลัก 3 คอลัมน์: พอร์ต · กระดานเทรด (แท่งเทียน, MA, RSI, MACD) · Watchlist"><br><sub>หน้าหลัก 3 คอลัมน์: พอร์ต · กระดานเทรด (แท่งเทียน, MA, RSI, MACD) · Watchlist</sub></td><td width="50%" valign="top"><img src="img/04-holdings.png" alt="สินทรัพย์ที่ถือ กำไร/ขาดทุน และฟอร์มซื้อ-ขาย"><br><sub>สินทรัพย์ที่ถือ กำไร/ขาดทุน และฟอร์มซื้อ-ขาย</sub></td></tr>
+<tr><td width="50%" valign="top"><img src="img/05-symbol-search.png" alt="ค้นหาหุ้น: ไม่พบในรายชื่อจะค้นต่อจาก Yahoo Finance"><br><sub>ค้นหาหุ้น: ไม่พบในรายชื่อจะค้นต่อจาก Yahoo Finance</sub></td><td width="50%" valign="top"><img src="img/06-transaction-edit.png" alt="แก้ไข/ลบรายการซื้อขายย้อนหลัง"><br><sub>แก้ไข/ลบรายการซื้อขายย้อนหลัง</sub></td></tr>
+<tr><td width="50%" valign="top"><img src="img/07-allocation.png" alt="Asset Allocation: สัดส่วนปัจจุบันเทียบเป้าหมาย"><br><sub>Asset Allocation: สัดส่วนปัจจุบันเทียบเป้าหมาย</sub></td><td width="50%" valign="top"><img src="img/08-support-resistance.png" alt="แนวรับ-แนวต้านบนกราฟราคา"><br><sub>แนวรับ-แนวต้านบนกราฟราคา</sub></td></tr>
+<tr><td width="50%" valign="top"><img src="img/09-alerts.png" alt="แจ้งเตือนราคาและสถานะ"><br><sub>แจ้งเตือนราคาและสถานะ</sub></td><td width="50%" valign="top"><img src="img/10-benchmark.png" alt="เปรียบเทียบผลตอบแทนกับ S&amp;P 500 / Dow Jones"><br><sub>เปรียบเทียบผลตอบแทนกับ S&amp;P 500 / Dow Jones</sub></td></tr>
+<tr><td width="50%" valign="top"><img src="img/11-rebalance.png" alt="แผนรีบาลานซ์ก่อนยืนยัน"><br><sub>แผนรีบาลานซ์ก่อนยืนยัน</sub></td><td width="50%" valign="top"><img src="img/12-thb-display.png" alt="สลับแสดงมูลค่าเป็นเงินบาท (USD/THB)"><br><sub>สลับแสดงมูลค่าเป็นเงินบาท (USD/THB)</sub></td></tr>
+</table>
+
+<details>
+<summary><b>หลักฐานด้านเทคนิค</b> (Swagger, Error Response, ผลเทสต์, CI/CD, Render)</summary>
+
+<table>
+<tr><td width="50%" valign="top"><img src="img/13-swagger.png" alt="Swagger UI บนเว็บที่ deploy"><br><sub>Swagger UI บนเว็บที่ deploy</sub></td><td width="50%" valign="top"><img src="img/14-error-response.png" alt="Error Response เมื่อข้อมูลไม่ผ่าน validation"><br><sub>Error Response เมื่อข้อมูลไม่ผ่าน validation</sub></td></tr>
+<tr><td width="50%" valign="top"><img src="img/15-test-result.png" alt="ผลการรันเทสต์ 257 ตัว ผ่านทั้งหมด"><br><sub>ผลการรันเทสต์ 257 ตัว ผ่านทั้งหมด</sub></td><td width="50%" valign="top"><img src="img/16-ci-pipeline.png" alt="GitHub Actions: backend · frontend · docker · deploy"><br><sub>GitHub Actions: backend · frontend · docker · deploy</sub></td></tr>
+<tr><td width="50%" valign="top"><img src="img/17-render-deploy.png" alt="สถานะการ deploy บน Render"><br><sub>สถานะการ deploy บน Render</sub></td><td></td></tr>
+</table>
+
+</details>
+
+<details>
+<summary><b>การทำงานเป็นทีม</b> (Branches, Pull Requests, Releases)</summary>
+
+<table>
+<tr><td width="50%" valign="top"><img src="img/18-branches.png" alt="Branch ของสมาชิกแต่ละคน + develop + main"><br><sub>Branch ของสมาชิกแต่ละคน + develop + main</sub></td><td width="50%" valign="top"><img src="img/19-pull-requests.png" alt="Pull Request ที่ merge แล้ว"><br><sub>Pull Request ที่ merge แล้ว</sub></td></tr>
+<tr><td width="50%" valign="top"><img src="img/20-releases.png" alt="Tag ของแต่ละเวอร์ชัน"><br><sub>Tag ของแต่ละเวอร์ชัน</sub></td><td></td></tr>
+</table>
+
+</details>
 
 ---
 
@@ -330,7 +387,7 @@ Tests run: 257, Failures: 0, Errors: 0, Skipped: 0
 ## Project Structure
 
 ```
-portfolio-system/
+Project_PPD/
 ├── code/                          # Source code + Configuration
 │   ├── pom.xml
 │   ├── docker-compose.yml         # PostgreSQL สำหรับพัฒนา
@@ -364,13 +421,14 @@ portfolio-system/
 │           ├── pages/             # Dashboard, PortfolioDetail, Assets, Login, Register
 │           ├── components/        # dashboard/, portfolio/, chart/, SymbolSearch
 │           ├── api/, context/, utils/
-├── test/                          # รายงานผลการทดสอบ
+├── test/                          # แผนการทดสอบ (README.md)
+│   └── test-report/               # ผล Surefire จาก CI + สรุปผล
 ├── doc/                           # เอกสาร, diagrams, slide
 │   ├── solid-analysis.md
 │   ├── design-patterns.md
 │   ├── data-dictionary.md
-│   ├── diagrams/              # er-diagram.md / .png
+│   ├── diagrams/              # ER, Use Case, Domain Model, Sequence, Component, Deployment + diagram_des.md
 │   └── slide/
-├── img/                           # รูปภาพ / screenshots
+├── img/                           # Screenshots 20 ภาพ (ใช้ในหัวข้อ Screenshots)
 └── README.md
 ```
